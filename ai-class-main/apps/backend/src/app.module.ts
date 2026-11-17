@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { DatabaseModule } from './db/database.module';
+import { HealthController } from './health.controller';
+
+@Module({})
+export class AppModule {
+  static forRoot(databaseUrl: string) {
+    return {
+      module: AppModule,
+      imports: [DatabaseModule.forRoot(databaseUrl)],
+      controllers: [HealthController],
+    };
+  }
+}

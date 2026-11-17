@@ -12,3 +12,5 @@ data/*
 *.log
 .DS_Store
 .claude/settings.local.json
+.pgdata/
+next-env.d.ts

@@ -1,0 +1,13 @@
+{
+  "name": "hospital-stock-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/backend", "apps/frontend"],
+  "scripts": {
+    "db": "npm run db -w @app/backend",
+    "dev:backend": "npm run dev -w @app/backend",
+    "dev:frontend": "npm run dev -w @app/frontend",
+    "test": "npm test -w @app/backend && npm test -w @app/frontend",
+    "typecheck": "npm run typecheck -w @app/backend && npm run typecheck -w @app/frontend"
+  }
+}
