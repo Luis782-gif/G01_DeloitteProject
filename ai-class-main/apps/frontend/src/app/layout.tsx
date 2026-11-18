@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { PAGES } from './pages';
+import { QualityFooter } from './quality-footer';
 
 export const metadata = { title: 'Stock hospitalar' };
 
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <main style={{ padding: 16 }}>{children}</main>
+        <QualityFooter />
       </body>
     </html>
   );
