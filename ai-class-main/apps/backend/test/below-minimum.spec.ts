@@ -30,7 +30,7 @@ describe('GET /api/kpis/below-minimum', () => {
   it('sem dados carregados: zeros, sem divisão por zero e lista vazia', async () => {
     t = await createTestApp();
     const res = await t.api.get('/api/kpis/below-minimum').expect(200);
-    expect(res.body).toEqual({ count: 0, eligible: 0, excluded: 0, pct: 0, items: [] });
+    expect(res.body).toEqual({ count: 0, eligible: 0, excluded: 0, pct: 0, itemsWithoutData: 0, items: [] });
   });
 
   it('só o snapshot de referência conta; desatualizado quando > 90 dias antes da data de corte', async () => {
