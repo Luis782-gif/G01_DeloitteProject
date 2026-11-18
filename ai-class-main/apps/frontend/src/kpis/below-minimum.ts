@@ -15,6 +15,8 @@ export interface BelowMinimum {
   eligible: number;
   excluded: number;
   pct: number;
+  /** Artigos sem nenhum snapshot no período: fora dos KPI, nunca contados como zero. */
+  itemsWithoutData: number;
   items: BelowMinimumItem[];
 }
 
