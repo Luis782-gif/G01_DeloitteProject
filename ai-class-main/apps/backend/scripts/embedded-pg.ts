@@ -1,4 +1,5 @@
 import { mkdtempSync, existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,6 +23,20 @@ export function freePort(): Promise<number> {
 }
 
 /**
+ * No Windows, logo após parar o Postgres, ficheiros da pasta de dados podem estar ainda bloqueados (EBUSY/EPERM).
+ * Tenta com pausas; se continuar bloqueada, é só lixo temporário: avisa e segue (o resto dos erros propaga-se).
+ */
+async function removeTempDir(dir: string): Promise<void> {
+  try {
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code !== 'EBUSY' && code !== 'EPERM') throw err;
+    console.warn(`Aviso: não foi possível apagar a pasta temporária ${dir} (${code}); pode ser apagada à mão.`);
+  }
+}
+
+/**
  * Arranca um PostgreSQL embedded (binários vindos do npm, sem instalação).
  * Sem `dataDir` usa uma pasta temporária descartada no fim (testes).
  * Com `dataDir` os dados persistem entre arranques (desenvolvimento).
@@ -35,7 +50,8 @@ export async function startEmbeddedPg(opts: { dataDir?: string; port?: number } 
     user: 'postgres',
     password: 'postgres',
     port,
-    persistent,
+    // A limpeza da pasta temporária é feita aqui (tolerante a EBUSY/EPERM no Windows), não pela biblioteca.
+    persistent: true,
     onLog: () => {},
     onError: () => {},
   });
@@ -44,6 +60,9 @@ export async function startEmbeddedPg(opts: { dataDir?: string; port?: number } 
   return {
     port,
     adminUrl: `postgres://postgres:postgres@localhost:${port}/postgres`,
-    stop: () => pg.stop(),
+    async stop() {
+      await pg.stop(); // falhas ao parar o servidor propagam-se
+      if (!persistent) await removeTempDir(databaseDir);
+    },
   };
 }
