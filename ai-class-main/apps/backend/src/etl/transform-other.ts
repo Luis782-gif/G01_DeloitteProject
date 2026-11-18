@@ -148,7 +148,8 @@ export function transformPatients(text: string): Transformed<PatientRecord> {
 
       const flags: Flag[] = [];
       const flagDischargeBeforeAdmission = dis.ms < adm.ms;
-      const stayDays = (dis.ms - adm.ms) / DAY_MS;
+      // Dias completos decorridos (truncados): é a leitura que reproduz os 451 do perfil de dados.
+      const stayDays = Math.floor((dis.ms - adm.ms) / DAY_MS);
       const flagBedDaysMismatch = Math.abs(bedDays - stayDays) > 1;
       if (flagDischargeBeforeAdmission) {
         flags.push({ rule: 'R20', message: `Alta (${dis.text}) anterior à admissão (${adm.text})` });
@@ -156,7 +157,7 @@ export function transformPatients(text: string): Transformed<PatientRecord> {
       if (flagBedDaysMismatch) {
         flags.push({
           rule: 'R21',
-          message: `Bed_Days ${bedDays} difere mais de 1 dia de (alta - admissão) = ${stayDays.toFixed(2)} dias`,
+          message: `Bed_Days ${bedDays} difere mais de 1 dia de (alta - admissão) = ${stayDays} dias completos`,
         });
       }
       const supplies = parseSupplies(rawSupplies);
