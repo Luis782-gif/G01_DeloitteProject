@@ -1,0 +1,6 @@
+Patient_ID,Admission_Date,Discharge_Date,Primary_Diagnosis,Procedure_Performed,Room_Type,Bed_Days,Supplies_Used,Equipment_Used,Staff_Needed
+P001,2024-10-06 05:30:28,2024-10-08 05:30:28,Diabetes,Appendectomy,General Ward,2,"Gloves, IV",Surgical Table,"1 Nurse, 1 Doctor"
+P002,2024-10-24 11:07:58,2024-10-15 05:16:54,Fracture,Appendectomy,ICU,10,"Gown, IV",MRI Machine,1 Nurse
+P003,2024-10-10 08:00:00,2024-10-12 20:00:00,Fracture,Chest X-ray,ICU,3,"Mask, Gown",X-ray Machine,2 Surgeons
+P004,2024-10-20 10:00:00,2024-10-21 10:00:00,Flu,Checkup,General Ward,1,,Stethoscope,Nurse
+P005,2024-10-25 09:00:00,2024-10-26 09:00:00,Flu,Checkup,General Ward,9,Gloves,Stethoscope,1 Doctor

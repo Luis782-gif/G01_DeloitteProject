@@ -10,6 +10,8 @@ const hashDir = (dir: string) =>
     readdirSync(dir).map((f) => [f, createHash('sha256').update(readFileSync(join(dir, f))).digest('hex')]),
   );
 
+const inv = (b: { byFile: { file: string }[] }) => b.byFile.find((f) => f.file === 'inventory_data.csv');
+
 describe('ETL do inventário e fornecedores + GET /api/meta/data-quality', () => {
   let t: TestApp;
   afterEach(async () => t?.close());
@@ -31,7 +33,10 @@ describe('ETL do inventário e fornecedores + GET /api/meta/data-quality', () =>
       pctTreated: 87.5, pctFlagged: 12.5, pctRejected: 0,
     });
     expect(res.body.byFile).toEqual([
+      { file: 'financial_data.csv', read: 0, flagged: 0, rejected: 0 },
       { file: 'inventory_data.csv', read: 5, flagged: 1, rejected: 0 },
+      { file: 'patient_data.csv', read: 0, flagged: 0, rejected: 0 },
+      { file: 'staff_data.csv', read: 0, flagged: 0, rejected: 0 },
       { file: 'vendor_data.csv', read: 3, flagged: 0, rejected: 0 },
     ]);
   });
@@ -79,7 +84,7 @@ describe('ETL do inventário e fornecedores + GET /api/meta/data-quality', () =>
   it('linha rejeitada (data inválida, R02): não entra no facto e o motivo fica registado', async () => {
     t = await createTestApp({ csvDir: fixture('rejected') });
     const res = await t.api.get('/api/meta/data-quality').expect(200);
-    expect(res.body.byFile[0]).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 0, rejected: 1 });
+    expect(inv(res.body)).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 0, rejected: 1 });
     expect(res.body.total).toMatchObject({ read: 5, treated: 4, flagged: 0, rejected: 1 });
     const facts = await t.pool.query('SELECT count(*)::int AS n FROM fact_inventory_snapshot');
     expect(facts.rows[0].n).toBe(1);
@@ -92,7 +97,7 @@ describe('ETL do inventário e fornecedores + GET /api/meta/data-quality', () =>
   it('stock acima do máximo (R10) é assinalado mas carregado', async () => {
     t = await createTestApp({ csvDir: fixture('stock-above-max') });
     const res = await t.api.get('/api/meta/data-quality').expect(200);
-    expect(res.body.byFile[0]).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 1, rejected: 0 });
+    expect(inv(res.body)).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 1, rejected: 0 });
     const log = await t.pool.query('SELECT rule_id, level, source_line FROM etl_quality_log');
     expect(log.rows).toEqual([{ rule_id: 'R10', level: 'flag', source_line: 3 }]);
     const f = await t.pool.query(
@@ -104,7 +109,7 @@ describe('ETL do inventário e fornecedores + GET /api/meta/data-quality', () =>
   it('mínimo acima do máximo (R11) é assinalado mas carregado', async () => {
     t = await createTestApp({ csvDir: fixture('min-above-max') });
     const res = await t.api.get('/api/meta/data-quality').expect(200);
-    expect(res.body.byFile[0]).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 1, rejected: 0 });
+    expect(inv(res.body)).toEqual({ file: 'inventory_data.csv', read: 2, flagged: 1, rejected: 0 });
     const log = await t.pool.query('SELECT rule_id FROM etl_quality_log');
     expect(log.rows).toEqual([{ rule_id: 'R11' }]);
   });

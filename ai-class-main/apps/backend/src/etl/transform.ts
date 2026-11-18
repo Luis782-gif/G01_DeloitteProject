@@ -57,15 +57,15 @@ const VENDOR_COLUMNS = [
 
 const INT_MAX = 2147483647;
 
-class Reject extends Error {
+export class Reject extends Error {
   constructor(readonly rule: string, message: string) {
     super(message);
   }
 }
 
-const clean = (s: string) => s.trim().replace(/\s+/g, ' ');
+export const clean = (s: string) => s.trim().replace(/\s+/g, ' ');
 
-function toDate(raw: string, col: string): string {
+export function toDate(raw: string, col: string): string {
   const s = raw.trim();
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
   if (m) {
@@ -76,7 +76,7 @@ function toDate(raw: string, col: string): string {
   throw new Reject('R02', `Data inválida em ${col}: "${raw}"`);
 }
 
-function toInt(raw: string, col: string): number {
+export function toInt(raw: string, col: string): number {
   const s = raw.trim();
   if (/^-?\d+$/.test(s)) {
     const n = Number(s);
@@ -85,13 +85,13 @@ function toInt(raw: string, col: string): number {
   throw new Reject('R03', `Número inteiro não interpretável em ${col}: "${raw}"`);
 }
 
-function toDecimal(raw: string, col: string): string {
+export function toDecimal(raw: string, col: string): string {
   const s = raw.trim();
   if (/^-?\d+(\.\d+)?$/.test(s) && Math.abs(Number(s)) < 1e10) return s;
   throw new Reject('R03', `Número decimal não interpretável em ${col}: "${raw}"`);
 }
 
-function toText(raw: string, col: string): string {
+export function toText(raw: string, col: string): string {
   const s = clean(raw);
   if (s === '') throw new Reject('R03', `Valor em falta em ${col}`);
   return s;
@@ -105,7 +105,7 @@ function header(cells: string[], expected: readonly string[], file: string): Map
   return idx;
 }
 
-function run<T>(
+export function run<T>(
   text: string,
   file: string,
   expected: readonly string[],
