@@ -98,6 +98,25 @@ O browser só fala com o Next; só o backend acede à base de dados e (no ETL, t
 `npm run etl` (com a base a correr) volta a carregar os CSV de `DATA_DIR` (ou da pasta passada como argumento) numa só transação: idempotente, nunca altera os CSV.
 Regista a execução em `etl_run` e o motivo de cada registo rejeitado/assinalado em `etl_quality_log`; os testes usam o mesmo `loadCsvFolder`.
 
+### Como aplicar os filtros num novo KPI
+
+Filtros globais: `periodo` (`2025`, `2025-Q3`, `2025-09`, `2025-01-01..2025-03-31`), `artigo` (`108:xray-machine`), `tipo` (do snapshot), `fornecedor` (`vendor_id`). O fim do período é a data de corte do snapshot de referência. Inválido = 400 `{ error, field }`.
+
+**Backend** (`apps/backend/src/filters/`): um endpoint de leitura só precisa de
+
+```ts
+@Get('meu-kpi') async meuKpi(@Query() query: Record<string, unknown>) {
+  const filters = await resolveFilters(this.pool, query);   // valida; lança 400
+  const q = filteredSnapshots(filters);                      // ou filteredSnapshots(filters, 3) se já usa $1 e $2
+  const { rows } = await this.pool.query(`WITH ${q.ctes} SELECT ... FROM ref WHERE x > $${q.params.length + 1}`, [...q.params, x]);
+  // devolver também itemsWithoutData: (SELECT count(*) FROM no_data)
+}
+```
+
+CTE disponíveis: `ref` (snapshot de referência por artigo: `ref_date`, `cutoff_date`, `stale`), `snaps` (todos os snapshots filtrados do período, para histórico/rotação/tendência), `period_snaps` (período + artigo, antes de tipo/fornecedor; é a base da classe ABC, spec 8.5), `no_data` (artigos sem snapshots no período: contar em "N artigos sem dados no período", nunca como zero) e `bounds` (`from_date`, `to_date`). `classe` e `triagem` estendem `ResolvedFilters`/`resolveFilters`/`filteredSnapshots`. Exemplo completo: `kpis/below-minimum.controller.ts`.
+
+**Frontend** (`apps/frontend/src/filters/`): o URL é a fonte de verdade. A página lê `parseFilterState(await searchParams)` e passa o mesmo `filters` a todos os visuais; cada visual (Server Component) chama `fetchWithFilters<T>('/api/...', filters, { ...extra })` (usa `apiPath`, que acrescenta os filtros ao pedido) e mostra `itemsWithoutData`; um 400 devolve `{ ok: false, message }`. A barra de slicers (`FilterBar`) está no layout e escreve no URL com `router.replace`; novos filtros acrescentam-se a `FILTER_KEYS` e ao `FilterBarView`.
+
 ### Testes
 
 ```bash
