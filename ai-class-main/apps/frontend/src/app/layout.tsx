@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { PAGES } from './pages';
+import { FilterBarSection } from '../filters/FilterBarSection';
 import { QualityFooter } from './quality-footer';
 import { ModeToggle } from '../components/ModeToggle';
 import { initModeScript } from '../theme/mode';
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <span className="spacer" />
           <ModeToggle />
         </nav>
+        <FilterBarSection />
         <main className="app-main">{children}</main>
         <QualityFooter />
       </body>

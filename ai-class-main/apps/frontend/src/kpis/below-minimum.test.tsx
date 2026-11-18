@@ -13,7 +13,7 @@ test('estado: <= 5 % OK, <= 10 % atenção, > 10 % crítico (limites incluídos 
 });
 
 const data = {
-  count: 2, eligible: 4, excluded: 1, pct: 50,
+  count: 2, eligible: 4, excluded: 1, pct: 50, itemsWithoutData: 0,
   items: [
     { itemRef: '108:xray-machine', name: 'X-ray Machine', stock: 715, min: 953, referenceDate: '2025-11-21', stale: false },
     { itemRef: '104:surgical-mask', name: 'Surgical Mask', stock: 542, min: 589, referenceDate: '2025-08-01', stale: true },
@@ -39,7 +39,7 @@ test('tabela mostra artigo, stock, mínimo, data de referência e marca de desat
 
 test('sem dados (API indisponível) ou sem artigos: mensagem, nunca erro', () => {
   assert.match(renderToStaticMarkup(<BelowMinimumView data={null} />), /indisponível/);
-  const empty = renderToStaticMarkup(<BelowMinimumView data={{ count: 0, eligible: 0, excluded: 0, pct: 0, items: [] }} />);
+  const empty = renderToStaticMarkup(<BelowMinimumView data={{ count: 0, eligible: 0, excluded: 0, pct: 0, itemsWithoutData: 0, items: [] }} />);
   assert.match(empty, /data-status="ok"/);
   assert.match(empty, /Nenhum artigo abaixo do mínimo/);
 });
