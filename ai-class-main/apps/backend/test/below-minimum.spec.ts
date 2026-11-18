@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createTestApp, fixture, TestApp } from './harness/test-app';
@@ -44,6 +44,10 @@ describe('GET /api/kpis/below-minimum', () => {
     ];
     writeFileSync(join(tmp, 'inventory_data.csv'), [HEADER, ...rows].join('\n') + '\n');
     writeFileSync(join(tmp, 'vendor_data.csv'), VENDORS);
+    // O ETL exige os 5 CSV (ticket #6): os restantes só com cabeçalho.
+    for (const f of ['financial_data.csv', 'patient_data.csv', 'staff_data.csv']) {
+      writeFileSync(join(tmp, f), readFileSync(join(fixture('f1'), f), 'utf8'));
+    }
     t = await createTestApp({ csvDir: tmp });
     const res = await t.api.get('/api/kpis/below-minimum').expect(200);
     expect(res.body).toMatchObject({ count: 3, eligible: 4, excluded: 0, pct: 75 });
