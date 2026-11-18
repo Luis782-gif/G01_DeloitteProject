@@ -102,6 +102,7 @@ Regista a execução em `etl_run` e o motivo de cada registo rejeitado/assinalad
 
 ```bash
 npm test                    # backend (Jest + PostgreSQL embedded efémero + API HTTP) e frontend
+npm test -w @app/frontend    # só frontend (tsx --test sobre src/**/*.test.ts(x): tema, contraste WCAG, modo, componentes de estado)
 ```
 
 Os testes de API usam `createTestApp()` (`apps/backend/test/harness/test-app.ts`): cria uma base nova e isolada,
