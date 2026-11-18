@@ -119,7 +119,7 @@ async function insertInventory(c: PoolClient, runId: number, recs: InventoryReco
          (date_key, item_sk, item_type_id, vendor_id, current_stock, min_required, max_capacity, unit_cost,
           avg_usage_per_day, restock_lead_time_days, stock_value, flag_stock_above_max, flag_min_above_max,
           source_line, run_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$5 * $8,$11,$12,$13,$14)`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$5::int * $8::numeric,$11,$12,$13,$14)`,
       [
         ymd(r.date), itemSk.get(`${r.itemId}|${r.itemName}`), typeId.get(r.itemType), r.vendorId, r.currentStock,
         r.minRequired, r.maxCapacity, r.unitCost, r.avgUsagePerDay, r.restockLeadTimeDays,
