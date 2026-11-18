@@ -1,0 +1,3 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-08-05,107,Equipment,X-ray Machine,2270,284,4909,19636.33,405,21,V001
+2025-13-45,100,Equipment,Gloves,1293,656,3747,311.77,489,10,V003

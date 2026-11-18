@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './db/database.module';
 import { HealthController } from './health.controller';
+import { MetaController } from './meta.controller';
 
 @Module({})
 export class AppModule {
@@ -8,7 +9,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController],
+      controllers: [HealthController, MetaController],
     };
   }
 }
