@@ -1,4 +1,4 @@
-import { KpiCard } from '../components/KpiCard';
+import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import type { LeadTime } from './lead-time';
 
 const fmt = (n: number | null, digits = 1) =>
@@ -11,7 +11,7 @@ export function LeadTimeView({ data, error }: { data: LeadTime | null; error?: s
   if (!data) return <p data-testid="lead-time-unavailable">Tempo médio de reposição: indisponível (a API não respondeu).</p>;
   return (
     <section aria-label="Tempo médio de reposição">
-      <KpiCard label="Tempo médio de reposição" value={fmt(data.mean)} unit="dias" />
+      <KpiCardWithInfo kpiId="lead-time" label="Tempo médio de reposição" value={fmt(data.mean)} unit="dias" />
       <p data-testid="lead-time-summary">
         Desvio-padrão {fmt(data.stdDev)} dias · coeficiente de variação {fmtCv(data.cv)} · {data.observations} observações
       </p>

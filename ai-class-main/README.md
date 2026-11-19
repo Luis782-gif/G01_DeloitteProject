@@ -138,3 +138,9 @@ DATABASE_URL=postgres://utilizador:palavra-passe@localhost:5432/stock
 
 Com Docker: `docker run -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=stock -p 5432:5432 postgres:18`
 e `DATABASE_URL=postgres://postgres:postgres@localhost:5432/stock`. Os testes continuam a usar o Postgres embedded.
+
+### Como é calculado: acrescentar uma entrada e ligar o (i) a um cartão
+
+1. Criar `apps/backend/src/kpis/explain/entries/<id>.ts` (export default de um objeto com a forma de `ExplainEntry`: `id, title, formula, source, columns, unit, approximation, limitations`) e acrescentar **uma linha** de import e uma de lista em `explain/registry.ts`. O conteúdo fica em `GET /api/kpis/<id>/explain` (404 `{ error }` se o id não existir).
+2. No frontend, trocar `<KpiCard .../>` por `<KpiCardWithInfo kpiId="<id>" label=... value=... status=... />` (`src/explain/KpiCardWithInfo.tsx`); o botão (i) abre `ExplainPanel`, que vai buscar a entrada à API.
+3. Gráficos: `recharts` em componentes `'use client'` (ADR 0003); a página "Onde dói" tem a dispersão autonomia × tempo de reposição como exemplo (`src/kpis/AutonomyScatter.tsx`).

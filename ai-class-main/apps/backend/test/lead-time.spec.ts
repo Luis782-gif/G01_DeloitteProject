@@ -62,6 +62,16 @@ describe('GET /api/kpis/lead-time', () => {
     expect(res.body.byItem.map((i: any) => i.itemRef).sort()).toEqual(['1:alpha', '2:beta']);
   });
 
+  it('GET /api/kpis/lead-time/explain: fonte do inventário, desvio populacional e limitação de ~10 observações', async () => {
+    t = await createTestApp();
+    const res = await t.api.get('/api/kpis/lead-time/explain').expect(200);
+    expect(res.body.id).toBe('lead-time');
+    expect(res.body.unit).toBe('dias');
+    expect(res.body.source).toContain('Restock_Lead_Time');
+    expect(res.body.formula).toContain('populacional');
+    expect(res.body.limitations.join(' ')).toContain('10 observações');
+  });
+
   it('sem dados: nulos, sem divisão por zero', async () => {
     t = await createTestApp();
     const res = await t.api.get('/api/kpis/lead-time').expect(200);

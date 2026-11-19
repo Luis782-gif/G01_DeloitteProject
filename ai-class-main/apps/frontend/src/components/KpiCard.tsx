@@ -5,7 +5,7 @@ export interface KpiCardProps {
   label: string;
   value: string;
   unit?: string;
-  /** Omitido nos KPI sem alvo (só comparação): sem indicador de estado. */
+  /** Sem alvo (KPI só de comparação): omitir o estado. */
   status?: Status;
   /** Abrirá o painel "Como é calculado" (ainda sem conteúdo). */
   onInfo?: () => void;
