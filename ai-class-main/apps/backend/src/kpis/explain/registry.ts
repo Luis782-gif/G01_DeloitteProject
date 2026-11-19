@@ -4,6 +4,7 @@ import autonomy from './entries/autonomy';
 import excessCapital from './entries/excess-capital';
 import idleStock from './entries/idle-stock';
 import rotation from './entries/rotation';
+import leadTime from './entries/lead-time';
 import shortageRate from './entries/shortage-rate';
 import slackDays from './entries/slack-days';
 
@@ -16,6 +17,7 @@ const ENTRIES: ExplainEntry[] = [
   excessCapital,
   idleStock,
   rotation,
+  leadTime,
 ];
 
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));
