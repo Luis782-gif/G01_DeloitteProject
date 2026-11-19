@@ -5,7 +5,8 @@ export interface KpiCardProps {
   label: string;
   value: string;
   unit?: string;
-  status: Status;
+  /** Omitido nos KPI sem alvo (só comparação): sem indicador de estado. */
+  status?: Status;
   /** Abrirá o painel "Como é calculado" (ainda sem conteúdo). */
   onInfo?: () => void;
 }
@@ -23,7 +24,7 @@ export function KpiCard({ label, value, unit, status, onInfo }: KpiCardProps) {
         <span className="kpi-value">{value}</span>
         {unit && <span className="kpi-unit">{unit}</span>}
       </p>
-      <StatusIndicator status={status} />
+      {status && <StatusIndicator status={status} />}
     </article>
   );
 }
