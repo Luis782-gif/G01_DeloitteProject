@@ -1,0 +1,9 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-06-01,1,Equipment,Item 001,1,0,10,5.00,1,1,V001
+2025-06-01,2,Consumable,Item 002,1,0,10,40.00,1,1,V001
+2025-06-01,3,Equipment,Item 003,1,0,10,15.00,1,1,V001
+2025-06-01,4,Consumable,Item 004,1,0,10,3.00,1,1,V001
+2025-06-01,5,Equipment,Item 005,1,0,10,38.00,1,1,V002
+2025-06-01,6,Consumable,Item 006,1,0,10,1.00,1,1,V002
+2025-06-01,7,Equipment,Item 007,1,0,10,2.00,1,1,V002
+2025-06-01,8,Consumable,Item 008,1,0,10,16.00,1,1,V002
