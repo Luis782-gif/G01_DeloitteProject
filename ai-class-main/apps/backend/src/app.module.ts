@@ -3,6 +3,7 @@ import { DatabaseModule } from './db/database.module';
 import { FilterOptionsController } from './filters/filter-options.controller';
 import { HealthController } from './health.controller';
 import { BelowMinimumController } from './kpis/below-minimum.controller';
+import { LeadTimeController } from './kpis/lead-time.controller';
 import { MetaController } from './meta.controller';
 
 @Module({})
@@ -11,7 +12,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, FilterOptionsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, LeadTimeController, FilterOptionsController],
     };
   }
 }
