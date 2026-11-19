@@ -36,9 +36,9 @@ describe('GET /api/kpis/excess-capital (K7)', () => {
     const res = await t.api.get('/api/kpis/excess-capital?okPct=15&atencaoPct=20').expect(200);
     expect(res.body.status).toBe('ok');
     expect(res.body.thresholds).toEqual({ okPct: 15, atencaoPct: 20 });
-    const mid = await t.api.get('/api/kpis/excess-capital?okPct=5&atencaoPct=14.5').expect(200);
+    const mid = await t.api.get('/api/kpis/excess-capital?okPct=5&atencaoPct=14.3').expect(200);
     expect(mid.body.status).toBe('critico');
-    const att = await t.api.get('/api/kpis/excess-capital?okPct=5&atencaoPct=15').expect(200);
+    const att = await t.api.get('/api/kpis/excess-capital?okPct=5&atencaoPct=14.4').expect(200);
     expect(att.body.status).toBe('atencao');
     await t.api.get('/api/kpis/excess-capital?okPct=x').expect(400);
   });
