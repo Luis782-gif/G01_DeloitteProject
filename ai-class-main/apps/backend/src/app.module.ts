@@ -5,6 +5,7 @@ import { HealthController } from './health.controller';
 import { AutonomyController } from './kpis/autonomy.controller';
 import { BelowMinimumController } from './kpis/below-minimum.controller';
 import { ExplainController } from './kpis/explain/explain.controller';
+import { RotationController } from './kpis/rotation.controller';
 import { MetaController } from './meta.controller';
 
 @Module({})
@@ -13,7 +14,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AutonomyController, ExplainController, FilterOptionsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AutonomyController, ExplainController, RotationController, FilterOptionsController],
     };
   }
 }
