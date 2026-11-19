@@ -1,0 +1,4 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-01-04,100,Consumable,Ventilator,690,839,2862,12144.29,353,1,V002
+2025-01-09,100,Consumable,Ventilator,1196,100,577,12615.11,55,8,V001
+2025-02-18,100,Equipment,Ventilator,1916,404,3520,19150.22,195,8,V001
