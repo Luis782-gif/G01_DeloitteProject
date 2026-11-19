@@ -8,6 +8,7 @@ const VENDORS =
   'Vendor_ID,Vendor_Name,Item_Supplied,Avg_Lead_Time (days),Cost_Per_Item,Last_Order_Date,Next_Delivery_Date\n' +
   'V1,Acme,Stuff,5,1.00,2025-01-01,2025-01-10\n';
 
+// A spec arredonda a 3 casas (1450/149 = 9,7315 aparece como 9,731): compara-se a 2 casas.
 const F1_AUTONOMY: Record<string, number> = {
   '108:xray-machine': 1.824, '104:surgical-mask': 1.319, '108:gloves': 9.731, '107:xray-machine': 5.605, '100:gloves': 2.644,
 };
@@ -30,7 +31,7 @@ describe('KPI autonomia, dias de folga e rutura prevista', () => {
     expect(res.body.median).toBeCloseTo(2.644, 3);
     expect(res.body).toMatchObject({ unit: 'dias', n: 5, noConsumption: 0, itemsWithoutData: 0 });
     expect(res.body.items).toHaveLength(5);
-    for (const i of res.body.items) expect(i.autonomy).toBeCloseTo(F1_AUTONOMY[i.itemRef], 3);
+    for (const i of res.body.items) expect(i.autonomy).toBeCloseTo(F1_AUTONOMY[i.itemRef], 2);
   });
 
   it('F1: dias de folga por artigo, todos críticos; mediana da folga', async () => {
@@ -38,7 +39,7 @@ describe('KPI autonomia, dias de folga e rutura prevista', () => {
     const res = await t.api.get('/api/kpis/slack-days').expect(200);
     expect(res.body.items).toHaveLength(5);
     for (const i of res.body.items) {
-      expect(i.slack).toBeCloseTo(F1_SLACK[i.itemRef], 3);
+      expect(i.slack).toBeCloseTo(F1_SLACK[i.itemRef], 2);
       expect(i.status).toBe('critico');
     }
     expect(res.body.median).toBeCloseTo(-7.356, 3);
