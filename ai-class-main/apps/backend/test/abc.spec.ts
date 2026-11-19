@@ -95,6 +95,17 @@ describe('GET /api/abc/pareto', () => {
     ]);
   });
 
+  it('GET /api/kpis/abc/explain: custo unitário aleatório, valor de stock e cortes 80/95', async () => {
+    t = await createTestApp();
+    const res = await t.api.get('/api/kpis/abc/explain').expect(200);
+    expect(res.body.id).toBe('abc');
+    expect(res.body.columns).toEqual(['current_stock', 'unit_cost']);
+    const text = JSON.stringify(res.body);
+    expect(text).toMatch(/aleatório/);
+    expect(text).toMatch(/valor de stock/);
+    expect(text).toMatch(/80\/95/);
+  });
+
   it('sem dados: lista vazia', async () => {
     t = await createTestApp();
     expect((await t.api.get('/api/abc/pareto').expect(200)).body).toEqual([]);
