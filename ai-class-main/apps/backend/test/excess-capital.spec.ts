@@ -57,6 +57,32 @@ describe('GET /api/kpis/excess-capital (K7)', () => {
   });
 });
 
+describe('GET /api/kpis/:id/explain (K7, K7b)', () => {
+  let t: TestApp;
+  afterEach(async () => t?.close());
+
+  it.each(['excess-capital', 'idle-stock'])('%s declara os custos irrealistas e que nunca se somam', async (id) => {
+    t = await createTestApp();
+    const res = await t.api.get(`/api/kpis/${id}/explain`).expect(200);
+    expect(res.body.id).toBe(id);
+    const text = JSON.stringify(res.body);
+    expect(text).toMatch(/irrealistas/);
+    expect(text).toMatch(/nunca se soma|nunca somar/);
+  });
+
+  it('o stock parado explica que substitui "sem movimento há N dias" (inviável)', async () => {
+    t = await createTestApp();
+    const res = await t.api.get('/api/kpis/idle-stock/explain').expect(200);
+    expect(res.body.approximation).toMatch(/inviável/);
+  });
+
+  it('o capital em excesso declara que o máximo é a política do hospital', async () => {
+    t = await createTestApp();
+    const res = await t.api.get('/api/kpis/excess-capital/explain').expect(200);
+    expect(res.body.approximation).toMatch(/política do hospital/);
+  });
+});
+
 describe('GET /api/kpis/idle-stock (K7b)', () => {
   let t: TestApp;
   afterEach(async () => t?.close());

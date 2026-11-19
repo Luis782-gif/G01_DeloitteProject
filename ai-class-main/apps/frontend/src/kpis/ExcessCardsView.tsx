@@ -1,4 +1,5 @@
-import { KpiCard } from '../components/KpiCard';
+import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
+import { IdleInfo } from './IdleInfo';
 import { fmtEur, fmtPct, type ExcessCapital, type IdleStock } from './excess';
 
 /** Cartões K7 (capital em excesso, com estado) e K7b (stock parado, informativo). Nunca se somam. */
@@ -8,12 +9,13 @@ export function ExcessCardsView({ excess, idle, error }: { excess: ExcessCapital
   const without = Math.max(excess.itemsWithoutData, idle.itemsWithoutData);
   return (
     <section aria-label="Capital em excesso e stock parado">
-      <KpiCard label="Capital em excesso" value={fmtPct(excess.pct)} unit="% do valor de stock" status={excess.status} />
+      <KpiCardWithInfo kpiId="excess-capital" label="Capital em excesso" value={fmtPct(excess.pct)} unit="% do valor de stock" status={excess.status} />
       <p data-testid="excess-summary">
         {fmtEur(excess.valueEur)} em {excess.itemsAbove} artigo{excess.itemsAbove === 1 ? '' : 's'} acima do máximo
       </p>
       <article aria-label="Stock parado" data-testid="idle-stock">
         <h3>Stock parado</h3>
+        <IdleInfo kpiId="idle-stock" />
         <p>
           <span className="kpi-value">{fmtEur(idle.valueEur)}</span>
         </p>
