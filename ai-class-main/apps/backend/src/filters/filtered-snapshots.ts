@@ -25,27 +25,48 @@ export interface FilteredSnapshots {
  *   await pool.query(`WITH ${q.ctes} SELECT ... FROM ref WHERE x > $${q.params.length + 1}`, [...q.params, x]);
  *
  * KPI sobre o histórico (rotação, tendência) usam `snaps`; KPI de estado atual usam `ref`.
- * Ponto de extensão: `classe` e `triagem` filtram `snaps`/`ref` aqui (a classe ABC calcula-se
- * sobre os artigos do período *antes* dos outros filtros, spec 8.5: usar `period_snaps`).
+ * `classe` filtra `snaps`/`ref` aqui; a CTE `abc` (classe, valor, % acumulada de cada artigo do período)
+ * calcula-se sobre `period_all` (período, *antes* de artigo/tipo/fornecedor, spec 7). `triagem` entra aqui depois.
  */
 export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredSnapshots {
-  const [from, to, item, type, vendor] = [0, 1, 2, 3, 4].map((i) => `$${firstParam + i}`);
+  const [from, to, item, type, vendor, classe, cutA, cutB] = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `$${firstParam + i}`);
   const ctes = `
     bounds AS (
       SELECT COALESCE(${from}::date, x.mn) AS from_date, COALESCE(${to}::date, x.mx) AS to_date
         FROM (SELECT min(d.date) AS mn, max(d.date) AS mx
                 FROM fact_inventory_snapshot f JOIN dim_date d ON d.date_key = f.date_key) x),
-    period_snaps AS (
+    period_all AS (
       SELECT f.*, d.date AS snap_date, i.item_id, i.item_name
         FROM fact_inventory_snapshot f
         JOIN dim_date d ON d.date_key = f.date_key
         JOIN dim_item i ON i.item_sk = f.item_sk
-        JOIN bounds b ON d.date BETWEEN b.from_date AND b.to_date
-       WHERE (${item}::int IS NULL OR f.item_sk = ${item}::int)),
+        JOIN bounds b ON d.date BETWEEN b.from_date AND b.to_date),
+    abc_base AS (
+      SELECT DISTINCT ON (item_sk) item_sk, item_id, item_name, (current_stock * unit_cost)::numeric AS value
+        FROM period_all
+       ORDER BY item_sk, date_key DESC),
+    abc_cum AS (
+      SELECT *, sum(value) OVER (ORDER BY value DESC, item_sk) AS cum_value,
+             sum(value) OVER () AS total, row_number() OVER (ORDER BY value DESC, item_sk) AS pos,
+             count(*) OVER () AS n
+        FROM abc_base),
+    abc AS (
+      SELECT item_sk, item_id, item_name, value::float8 AS value, pos,
+             CASE WHEN total > 0 THEN round(cum_value / total * 100, 2)::float8 ELSE 0 END AS cum_pct,
+             round(pos * 100.0 / n, 2)::float8 AS ref_cum_pct,
+             CASE WHEN value <= 0 THEN 'C'
+                  WHEN pos = 1 OR cum_value / total * 100 <= ${cutA}::numeric THEN 'A'
+                  WHEN cum_value / total * 100 <= ${cutB}::numeric THEN 'B'
+                  ELSE 'C' END AS class
+        FROM abc_cum),
+    period_snaps AS (
+      SELECT * FROM period_all
+       WHERE (${item}::int IS NULL OR item_sk = ${item}::int)),
     snaps AS (
-      SELECT * FROM period_snaps
+      SELECT * FROM period_snaps ps
        WHERE (${type}::smallint IS NULL OR item_type_id = ${type}::smallint)
-         AND (${vendor}::text IS NULL OR vendor_id = ${vendor}::text)),
+         AND (${vendor}::text IS NULL OR vendor_id = ${vendor}::text)
+         AND (${classe}::text IS NULL OR ps.item_sk IN (SELECT a.item_sk FROM abc a WHERE a.class = ${classe}::text))),
     ref AS (
       SELECT DISTINCT ON (s.item_sk)
              s.*, s.snap_date AS ref_date, b.to_date AS cutoff_date,
@@ -56,5 +77,5 @@ export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredS
       SELECT i.item_sk FROM dim_item i
        WHERE (${item}::int IS NULL OR i.item_sk = ${item}::int)
          AND NOT EXISTS (SELECT 1 FROM period_snaps p WHERE p.item_sk = i.item_sk))`;
-  return { ctes, params: [f.from, f.to, f.itemSk, f.itemTypeId, f.vendorId] };
+  return { ctes, params: [f.from, f.to, f.itemSk, f.itemTypeId, f.vendorId, f.classe, f.cutA, f.cutB] };
 }

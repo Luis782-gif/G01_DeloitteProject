@@ -14,9 +14,9 @@ describe('GET /api/abc/pareto', () => {
     t = await createTestApp({ csvDir: fixture('f1') });
     const { body } = await t.api.get('/api/abc/pareto').expect(200);
     expect(body.map((r: any) => [r.itemRef, r.value, r.cumPct, r.refCumPct, r.class])).toEqual([
-      ['107:x-ray-machine', 44574469.1, 49.47, 20, 'A'],
+      ['107:xray-machine', 44574469.1, 49.47, 20, 'A'],
       ['108:gloves', 27483430.5, 79.98, 40, 'A'],
-      ['108:x-ray-machine', 13088339.55, 94.5, 60, 'B'],
+      ['108:xray-machine', 13088339.55, 94.5, 60, 'B'],
       ['104:surgical-mask', 4549369.14, 99.55, 80, 'C'],
       ['100:gloves', 403118.61, 100, 100, 'C'],
     ]);
@@ -58,8 +58,8 @@ describe('GET /api/abc/pareto', () => {
     const pairs = (b: any[]) => b.map((r) => [r.itemRef, r.class]);
     const byTipo = (await t.api.get('/api/abc/pareto?tipo=Equipment').expect(200)).body;
     expect(pairs(byTipo)).toEqual([
-      ['107:x-ray-machine', 'A'],
-      ['108:x-ray-machine', 'B'],
+      ['107:xray-machine', 'A'],
+      ['108:xray-machine', 'B'],
       ['104:surgical-mask', 'C'],
       ['100:gloves', 'C'],
     ]);
@@ -69,18 +69,18 @@ describe('GET /api/abc/pareto', () => {
       ['104:surgical-mask', 'C'],
       ['100:gloves', 'C'],
     ]);
-    const byItem = (await t.api.get('/api/abc/pareto?artigo=108:x-ray-machine').expect(200)).body;
-    expect(pairs(byItem)).toEqual([['108:x-ray-machine', 'B']]);
+    const byItem = (await t.api.get('/api/abc/pareto?artigo=108:xray-machine').expect(200)).body;
+    expect(pairs(byItem)).toEqual([['108:xray-machine', 'B']]);
   });
 
   it('filtro classe: usa a classe depois dos outros filtros, no Pareto e nos KPI', async () => {
     t = await createTestApp({ csvDir: fixture('f1') });
     const a = (await t.api.get('/api/abc/pareto?classe=A').expect(200)).body;
-    expect(a.map((r: any) => r.itemRef)).toEqual(['107:x-ray-machine', '108:gloves']);
+    expect(a.map((r: any) => r.itemRef)).toEqual(['107:xray-machine', '108:gloves']);
     const c = (await t.api.get('/api/abc/pareto?classe=C&tipo=Equipment').expect(200)).body;
     expect(c.map((r: any) => r.itemRef)).toEqual(['104:surgical-mask', '100:gloves']);
     const bm = (await t.api.get('/api/kpis/below-minimum?classe=B').expect(200)).body;
-    expect(bm.items.map((i: any) => i.itemRef)).toEqual(['108:x-ray-machine']);
+    expect(bm.items.map((i: any) => i.itemRef)).toEqual(['108:xray-machine']);
     await t.api.get('/api/abc/pareto?classe=D').expect(400);
   });
 
@@ -89,8 +89,8 @@ describe('GET /api/abc/pareto', () => {
     const { body } = await t.api.get('/api/abc/pareto?periodo=2025-08-01..2025-11-21').expect(200);
     // 107 = 44,57M, 108 X-ray = 13,09M, 100 = 0,40M; total 58,07M -> 76,8 % / 99,3 % / 100 %
     expect(body.map((r: any) => [r.itemRef, r.class])).toEqual([
-      ['107:x-ray-machine', 'A'],
-      ['108:x-ray-machine', 'C'],
+      ['107:xray-machine', 'A'],
+      ['108:xray-machine', 'C'],
       ['100:gloves', 'C'],
     ]);
   });

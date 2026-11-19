@@ -15,10 +15,15 @@ export interface ResolvedFilters {
   itemSk: number | null;
   itemTypeId: number | null;
   vendorId: string | null;
+  /** Filtro de classe ABC (A/B/C) ou null. Usa a classe calculada antes dos outros filtros. */
+  classe: 'A' | 'B' | 'C' | null;
+  /** Cortes ABC em % do valor acumulado (spec 7): parâmetros `cutA`/`cutB`, por defeito 80/95. */
+  cutA: number;
+  cutB: number;
 }
 
 /** Nomes dos parâmetros de query que um endpoint de leitura aceita como filtros. */
-export const FILTER_QUERY_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor'] as const;
+export const FILTER_QUERY_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe'] as const;
 
 const bad = (field: string, error: string) => new BadRequestException({ error, field });
 
@@ -68,7 +73,7 @@ function single(query: Record<string, unknown>, field: string): string | undefin
  * Valores inválidos ou inexistentes -> 400 `{ error, field }`.
  */
 export async function resolveFilters(pool: Pool, query: Record<string, unknown>): Promise<ResolvedFilters> {
-  const f: ResolvedFilters = { from: null, to: null, itemSk: null, itemTypeId: null, vendorId: null };
+  const f: ResolvedFilters = { from: null, to: null, itemSk: null, itemTypeId: null, vendorId: null, classe: null, cutA: 80, cutB: 95 };
 
   const periodo = single(query, 'periodo');
   if (periodo) Object.assign(f, parsePeriod(periodo));
@@ -96,6 +101,23 @@ export async function resolveFilters(pool: Pool, query: Record<string, unknown>)
     if (!r) throw bad('fornecedor', `Fornecedor desconhecido: "${fornecedor}"`);
     f.vendorId = fornecedor;
   }
+
+  const classe = single(query, 'classe');
+  if (classe) {
+    if (classe !== 'A' && classe !== 'B' && classe !== 'C') throw bad('classe', `Classe inválida: "${classe}" (use A, B ou C)`);
+    f.classe = classe;
+  }
+
+  const cut = (field: 'cutA' | 'cutB') => {
+    const v = single(query, field);
+    if (v === undefined) return f[field];
+    const n = Number(v);
+    if (!Number.isFinite(n) || n <= 0 || n > 100) throw bad(field, `Corte inválido: "${v}" (use um número entre 0 e 100)`);
+    return n;
+  };
+  f.cutA = cut('cutA');
+  f.cutB = cut('cutB');
+  if (f.cutA >= f.cutB) throw bad('cutB', 'cutB tem de ser maior que cutA');
 
   return f;
 }
