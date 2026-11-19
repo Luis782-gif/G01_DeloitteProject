@@ -63,8 +63,7 @@ describe('GET /api/kpis/rotation', () => {
     expect(v.body.items[0].snapshots).toBe(1);
     expect(v.body.items[0].estimatedConsumption).toBe(353 * 90);
     expect(v.body.items[0].rotation).toBeCloseTo((353 * 90) / 690, 3);
-    const none = await t.api.get(`/api/kpis/rotation?${Q1}&fornecedor=V999`).expect(200);
-    expect(none.body.items).toEqual([]);
+    await t.api.get(`/api/kpis/rotation?${Q1}&fornecedor=V999`).expect(400); // fornecedor desconhecido
     await t.api.get('/api/kpis/rotation?periodo=abc').expect(400);
   });
 });
