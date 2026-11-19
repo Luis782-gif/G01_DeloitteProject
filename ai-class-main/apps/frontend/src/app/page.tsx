@@ -1,5 +1,6 @@
 import { parseFilterState } from '../filters/filters';
 import { BelowMinimumSection } from '../kpis/BelowMinimumSection';
+import { RotationSection } from '../kpis/RotationSection';
 
 /** Os filtros vêm do URL; todos os visuais da página recebem o mesmo estado. */
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -8,6 +9,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     <>
       <h1>Pulso do hospital</h1>
       <BelowMinimumSection filters={filters} />
+      <RotationSection filters={filters} />
     </>
   );
 }
