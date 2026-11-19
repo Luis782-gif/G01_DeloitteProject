@@ -1,6 +1,7 @@
 import { parseFilterState } from '../filters/filters';
 import { AutonomySection } from '../kpis/AutonomySection';
 import { BelowMinimumSection } from '../kpis/BelowMinimumSection';
+import { ExcessCardsSection } from '../kpis/ExcessSections';
 import { RotationSection } from '../kpis/RotationSection';
 
 /** Os filtros vêm do URL; todos os visuais da página recebem o mesmo estado. */
@@ -12,6 +13,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <AutonomySection filters={filters} />
       <BelowMinimumSection filters={filters} />
       <RotationSection filters={filters} />
+      <ExcessCardsSection filters={filters} />
     </>
   );
 }

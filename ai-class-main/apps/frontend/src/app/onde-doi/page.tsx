@@ -1,5 +1,6 @@
 import { parseFilterState } from '../../filters/filters';
 import { AbcParetoSection } from '../../kpis/AbcParetoSection';
+import { ExcessBarsSection } from '../../kpis/ExcessSections';
 import { ScatterSection } from '../../kpis/ScatterSection';
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -9,6 +10,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <h1>Onde dói</h1>
       <ScatterSection filters={filters} />
       <AbcParetoSection filters={filters} />
+      <ExcessBarsSection filters={filters} />
     </>
   );
 }

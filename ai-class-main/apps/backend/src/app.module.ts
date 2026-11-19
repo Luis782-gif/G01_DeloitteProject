@@ -5,6 +5,7 @@ import { HealthController } from './health.controller';
 import { AbcController } from './kpis/abc.controller';
 import { AutonomyController } from './kpis/autonomy.controller';
 import { BelowMinimumController } from './kpis/below-minimum.controller';
+import { ExcessCapitalController } from './kpis/excess-capital.controller';
 import { ExplainController } from './kpis/explain/explain.controller';
 import { RotationController } from './kpis/rotation.controller';
 import { MetaController } from './meta.controller';
@@ -15,7 +16,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExplainController, RotationController, FilterOptionsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, FilterOptionsController],
     };
   }
 }

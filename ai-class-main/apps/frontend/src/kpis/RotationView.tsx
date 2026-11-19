@@ -1,4 +1,4 @@
-import { KpiCard } from '../components/KpiCard';
+import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import type { Rotation } from './rotation';
 
 const fmt = (n: number | null) =>
@@ -14,7 +14,7 @@ export function RotationView({ data, error }: { data: Rotation | null; error?: s
   }
   return (
     <section aria-label="Rotação do stock">
-      <KpiCard label="Rotação do stock" value={fmt(data.rotation)} unit="× no período" />
+      <KpiCardWithInfo kpiId="rotation" label="Rotação do stock" value={fmt(data.rotation)} unit="× no período" />
       <p data-testid="rotation-summary">
         Anualizada: {fmt(data.annualizedRotation)} × por ano · {data.periodDays} dias · aproximação a partir do consumo médio diário
       </p>

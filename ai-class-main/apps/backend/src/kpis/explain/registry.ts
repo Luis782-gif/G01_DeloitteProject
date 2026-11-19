@@ -1,6 +1,9 @@
 import type { ExplainEntry } from './explain-entry';
 import abc from './entries/abc';
 import autonomy from './entries/autonomy';
+import excessCapital from './entries/excess-capital';
+import idleStock from './entries/idle-stock';
+import rotation from './entries/rotation';
 import shortageRate from './entries/shortage-rate';
 import slackDays from './entries/slack-days';
 
@@ -10,6 +13,9 @@ const ENTRIES: ExplainEntry[] = [
   slackDays,
   shortageRate,
   abc,
+  excessCapital,
+  idleStock,
+  rotation,
 ];
 
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));
