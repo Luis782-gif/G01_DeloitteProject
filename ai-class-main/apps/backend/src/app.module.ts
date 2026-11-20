@@ -14,6 +14,7 @@ import { RotationController } from './kpis/rotation.controller';
 import { ShortageCalendarController } from './kpis/shortage-calendar.controller';
 import { SearchController } from './kpis/search.controller';
 import { TriageController } from './kpis/triage.controller';
+import { SimulationsController } from './kpis/simulations.controller';
 import { ReorderSuggestionsController } from './kpis/reorder-suggestions.controller';
 import { TrendController } from './kpis/trend.controller';
 import { VendorsController } from './kpis/vendors.controller';
@@ -25,7 +26,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController, ReorderSuggestionsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController, ReorderSuggestionsController, SimulationsController],
     };
   }
 }
