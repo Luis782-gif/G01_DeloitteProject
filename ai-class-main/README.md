@@ -93,6 +93,42 @@ npm run dev:frontend        # terminal 3: aplicação em http://localhost:3000
 Verificação: `http://localhost:3000/api/health` (via Next, que reencaminha `/api/*` para o backend) deve devolver `{"status":"ok",...}`.
 O browser só fala com o Next; só o backend acede à base de dados e (no ETL, ticket #4) aos CSV em `DATA_DIR`.
 
+Passos de ponta a ponta (primeira vez): `npm install --include=dev` (instala também o Jest e as ferramentas de teste), copiar `.env.example` para `.env`, colocar os 5 CSV em `data/` (ou apontar `DATA_DIR`), `npm run db`, `npm run etl`, `npm run dev:backend` e `npm run dev:frontend`; abrir `http://localhost:3000`. Para outro PostgreSQL em vez do embedded, ver "Outro PostgreSQL" abaixo.
+
+| Serviço | Porta por defeito | Variável |
+| --- | --- | --- |
+| Frontend (Next.js) | 3000 | `next dev -p` |
+| Backend (NestJS) | 3001 | `BACKEND_PORT` |
+| PostgreSQL embedded | 54329 | `DEV_DB_PORT` |
+
+### Variáveis de ambiente (`.env`, ver `.env.example`; sem segredos)
+
+| Variável | Função |
+| --- | --- |
+| `DATABASE_URL` | Ligação ao PostgreSQL (backend e ETL) |
+| `BACKEND_PORT` | Porta da API |
+| `BACKEND_URL` | Para onde o Next reencaminha `/api/*` (servidor a servidor) |
+| `DATA_DIR` | Pasta com os 5 CSV, lida só pelo ETL |
+
+### Arquitetura
+
+`browser → Next.js (frontend) → NestJS (API) → PostgreSQL`. O browser só fala com o Next; o Next reencaminha `/api/*` para o NestJS; só o NestJS acede à base de dados. Os CSV são lidos apenas pelo ETL, que os carrega para a base (estrela, 3NF). Todos os KPI, filtros e frases-insight são calculados no servidor, em SQL.
+
+### Do agente ao código: spec → ticket → teste → código
+
+1. **Spec**: `docs/spec.md` (objetivo, KPI, storyboard, contratos, critérios de aceitação AC-xx e conjuntos de teste calculados à mão na secção 12). O vocabulário está em `GLOSSARY.md` e as decisões difíceis de reverter em `docs/adr/` (0001 a 0003). Desvios da implementação: secção 17 da spec.
+2. **Tickets**: GitHub Issues (`gh issue list`), um por fatia vertical, todos filhos da spec (#1). Cada ticket tem critérios de aceitação que citam os AC e os valores de `docs/spec.md`.
+3. **Teste primeiro**: o critério vira um teste com o valor calculado à mão (`apps/backend/test/*.spec.ts` sobre a API real, `apps/frontend/src/**/*.test.ts(x)` para a interface), e só depois se escreve o código.
+4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`.
+
+| Ticket | Critério (spec) | Teste que o prova |
+| --- | --- | --- |
+| #5 Abaixo do mínimo | F1: 2 de 4 elegíveis, 1 excluído, 50 % | `backend/below-minimum.spec.ts` |
+| #9 Tempo médio de reposição | F1: (25+3+13+21+10)/5 = 14,4 dias | `backend/lead-time.spec.ts` |
+| #10 Classe ABC | Aula (cortes 66/91): A={2,5}, B={8,3}, C={1,4,7,6}; F1 (80/95) | `backend/abc.spec.ts` |
+| #11 Rotação | F2: 18 090 / 1267,33 = 14,274 | `backend/rotation.spec.ts` |
+| #8 Autonomia | F1: 1,82; 1,32; 9,73; 5,61; 2,64 (mediana 2,644) | `backend/autonomy.spec.ts` |
+
 ### Refresh dos dados (ETL)
 
 `npm run etl` (com a base a correr) volta a carregar os CSV de `DATA_DIR` (ou da pasta passada como argumento) numa só transação: idempotente, nunca altera os CSV.
@@ -126,7 +162,8 @@ npm test -w @app/frontend    # só frontend (tsx --test sobre src/**/*.test.ts(x
 
 Os testes de API usam `createTestApp()` (`apps/backend/test/harness/test-app.ts`): cria uma base nova e isolada,
 aplica as migrações, carrega opcionalmente uma pasta de CSV de teste (`fixture('f1')` em `apps/backend/test/fixtures/`)
-e devolve um cliente `supertest` sobre a API real. Ver `apps/backend/test/health.spec.ts`.
+e devolve um cliente `supertest` sobre a API real. Ver `apps/backend/test/health.spec.ts`. O `close()` é idempotente e o harness fecha, no fim de cada teste, qualquer app que tenha ficado aberta. Em Windows, `embedded-pg.ts` destrói também os pipes de stdio do processo Postgres ao parar (ficavam abertos e o Jest não terminava).
+`apps/backend/test/real-data.spec.ts` confirma AC-03 e AC-40 com os CSV completos; é ignorado se os CSV não estiverem em `DATA_DIR` ou `data/`. `npm run typecheck` verifica os dois pacotes.
 
 ### Outro PostgreSQL (nativo ou Docker)
 

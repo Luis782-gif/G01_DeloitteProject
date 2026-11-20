@@ -1,3 +1,4 @@
+import type { ChildProcess } from 'node:child_process';
 import { mkdtempSync, existsSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { createServer } from 'node:net';
@@ -61,7 +62,13 @@ export async function startEmbeddedPg(opts: { dataDir?: string; port?: number } 
     port,
     adminUrl: `postgres://postgres:postgres@localhost:${port}/postgres`,
     async stop() {
+      // No Windows o Postgres é morto com `taskkill /t`, e os pipes de stdio do processo-filho podem ficar abertos
+      // (eram os 2 `Socket` que impediam o Jest de terminar). Guarda o filho e destrói os pipes depois de parar.
+      const child = (pg as unknown as { process?: ChildProcess }).process;
       await pg.stop(); // falhas ao parar o servidor propagam-se
+      child?.stdin?.destroy();
+      child?.stdout?.destroy();
+      child?.stderr?.destroy();
       if (!persistent) await removeTempDir(databaseDir);
     },
   };
