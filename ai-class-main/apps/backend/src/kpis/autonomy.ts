@@ -12,9 +12,9 @@ export const DEFAULT_SLACK_THRESHOLDS: SlackThresholds = { ok: 7, critical: 0 };
 export const autonomyDays = (stock: number, usagePerDay: number): number | null =>
   usagePerDay > 0 ? stock / usagePerDay : null;
 
-/** K6: autonomia - tempo de reposição; sem autonomia, sem folga. */
+/** K6: autonomia - tempo de reposição; sem autonomia ou com tempo de reposição <= 0 (R12, inválido), sem folga. */
 export const slackDays = (autonomy: number | null, leadTime: number): number | null =>
-  autonomy === null ? null : autonomy - leadTime;
+  autonomy === null || leadTime <= 0 ? null : autonomy - leadTime;
 
 export const slackStatus = (slack: number, t: SlackThresholds): Status =>
   slack >= t.ok ? 'ok' : slack >= t.critical ? 'atencao' : 'critico';

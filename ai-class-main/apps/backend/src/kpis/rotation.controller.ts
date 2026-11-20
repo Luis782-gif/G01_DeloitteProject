@@ -21,7 +21,10 @@ export class RotationController {
   /**
    * K2: rotação do stock = consumo estimado / stock médio, por artigo e agregada.
    * Consumo estimado = média de `avg_usage_per_day` dos snapshots do período x dias do período (inclusivos);
-   * stock médio = média de `current_stock`. Sem filtro `periodo`, os dias são o intervalo completo dos dados.
+   * stock médio = média de `current_stock`. Os dias são os do período filtrado (sem filtro `periodo`, o intervalo
+   * completo dos dados); um período sem nenhum snapshot nos dados -> 0 dias, rotação nula e `noData`.
+   * NOTA: não se faz a interseção com o intervalo real dos snapshots (ver spec 17): a F2 (spec 12.2) exige 90 dias de 2025-Q1 mesmo
+   * com snapshots só entre 2025-01-04 e 2025-02-18.
    * Versão em valor (secundária): consumo x custo unitário médio / média de `stock_value`.
    * Agregada = razão das somas (soma dos consumos / soma dos stocks médios). Anualizada = x 365 / dias.
    */
@@ -33,7 +36,10 @@ export class RotationController {
     const pageSize = positiveInt(query.pageSize, 50, 500);
 
     const period = (await this.pool.query(
-      `WITH ${q.ctes} SELECT (to_date - from_date + 1)::int AS days, (SELECT count(*)::int FROM no_data) AS without_data FROM bounds`,
+      `WITH ${q.ctes}
+       SELECT CASE WHEN EXISTS (SELECT 1 FROM period_all) THEN (b.to_date - b.from_date + 1)::int ELSE 0 END AS days,
+              (SELECT count(*)::int FROM no_data) AS without_data
+         FROM bounds b`,
       q.params,
     )).rows[0];
     const periodDays = (period?.days ?? 0) as number;
@@ -71,6 +77,7 @@ export class RotationController {
     const vrot = ratio(sumConsValue, sumValue);
     return {
       periodDays,
+      noData: rows.length === 0,
       itemsWithoutData: period?.without_data ?? 0,
       estimatedConsumption: round(sumCons, 3),
       averageStock: round(sumStock, 3),

@@ -9,6 +9,8 @@ export default {
   limitations: [
     'Folga negativa significa rutura prevista antes de a próxima entrega chegar.',
     'Artigos sem consumo não têm folga e ficam fora da mediana e das contagens.',
+    'Artigos com tempo de reposição <= 0 (regra R12) não têm folga (valor inválido, como no K3 e no índice de risco): ficam fora da mediana e das contagens e são contados em "invalidLeadTime".',
+    'slackOk tem de ser maior que slackCritical (senão, erro 400).',
     'Os limiares 7 e 0 dias são parâmetros, não padrões da indústria.',
   ],
 };

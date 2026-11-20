@@ -2,7 +2,7 @@ import { Controller, Get, Inject, NotFoundException, Param, Query } from '@nestj
 import type { Pool } from 'pg';
 import { PG_POOL } from '../db/database.module';
 import { filteredSnapshots } from '../filters/filtered-snapshots';
-import { resolveFilters } from '../filters/filters';
+import { MAX_INT4, resolveFilters } from '../filters/filters';
 import { autonomyDays, slackDays } from './autonomy';
 import { itemRef } from './reference-snapshot';
 
@@ -23,7 +23,7 @@ export class DetailController {
   @Get('items/:itemRef')
   async item(@Param('itemRef') ref: string, @Query() query: Record<string, unknown>) {
     const m = ref.match(/^(\d+):(.+)$/);
-    const found = m
+    const found = m && Number.isSafeInteger(Number(m[1])) && Number(m[1]) <= MAX_INT4
       ? (await this.pool.query('SELECT item_sk, item_id, item_name FROM dim_item WHERE item_id = $1', [Number(m[1])])).rows.find(
           (r) => itemRef(r.item_id, r.item_name) === ref,
         )

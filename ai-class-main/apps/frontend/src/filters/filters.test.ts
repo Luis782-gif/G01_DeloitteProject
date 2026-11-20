@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { apiPath, filtersToSearch, parseFilterState, toggleFilter, updateSearch } from './filters';
+import { apiPath, filtersToSearch, parseFilterState, shouldCommitPeriod, toggleFilter, updateSearch } from './filters';
+
+test('shouldCommitPeriod: só confirma quando o valor difere do estado do URL e do último enviado', () => {
+  assert.equal(shouldCommitPeriod(' 2025-Q1 ', '', ''), true);
+  assert.equal(shouldCommitPeriod('2025-Q1', '2025-Q1', '2025-Q1'), false);
+  // Enter já enviou "2025-Q1" mas o URL ainda não refletiu: o blur seguinte não repete a navegação
+  assert.equal(shouldCommitPeriod('2025-Q1', '', '2025-Q1'), false);
+  assert.equal(shouldCommitPeriod('', '2025', '2025'), true);
+});
 
 test('toggleFilter: aplica o filtro; clicar de novo no mesmo valor remove-o', () => {
   assert.equal(toggleFilter('', 'classe', 'A'), 'classe=A');

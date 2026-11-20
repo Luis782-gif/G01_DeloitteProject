@@ -34,6 +34,12 @@ export class AutonomyController {
       ok: threshold(query.slackOk, 'slackOk', DEFAULT_SLACK_THRESHOLDS.ok),
       critical: threshold(query.slackCritical, 'slackCritical', DEFAULT_SLACK_THRESHOLDS.critical),
     };
+    if (!(thresholds.ok > thresholds.critical)) {
+      throw new BadRequestException({
+        error: `slackOk (${thresholds.ok}) tem de ser maior que slackCritical (${thresholds.critical})`,
+        field: query.slackOk !== undefined && query.slackOk !== '' ? 'slackOk' : 'slackCritical',
+      });
+    }
     const q = filteredSnapshots(filters);
     const { rows } = await this.pool.query(
       `WITH ${q.ctes}
@@ -58,6 +64,7 @@ export class AutonomyController {
         slack: round(slack),
         status: slack === null ? null : slackStatus(slack, thresholds),
         noConsumption: autonomy === null,
+        invalidLeadTime: autonomy !== null && (r.restock_lead_time_days as number) <= 0,
         referenceDate: r.ref_date as string,
         stale: r.stale as boolean,
         _autonomy: autonomy,
@@ -71,7 +78,8 @@ export class AutonomyController {
       withoutData,
       items: items.map(({ _autonomy, _slack, ...i }) => i),
       n: withValue.length,
-      noConsumption: items.length - withValue.length,
+      noConsumption: items.filter((i) => i.noConsumption).length,
+      invalidLeadTime: items.filter((i) => i.invalidLeadTime).length,
       medianAutonomy: median(items.flatMap((i) => (i._autonomy === null ? [] : [i._autonomy]))),
       medianSlack,
       statusOf: (slack: number | null): Status | null => (slack === null ? null : slackStatus(slack, thresholds)),
@@ -87,6 +95,7 @@ export class AutonomyController {
       unit: 'dias',
       n: d.n,
       noConsumption: d.noConsumption,
+      invalidLeadTime: d.invalidLeadTime,
       status: d.statusOf(d.medianSlack),
       itemsWithoutData: d.withoutData,
       items: d.items,
@@ -107,6 +116,7 @@ export class AutonomyController {
       counts,
       n: d.n,
       noConsumption: d.noConsumption,
+      invalidLeadTime: d.invalidLeadTime,
       itemsWithoutData: d.withoutData,
       items: d.items,
     };
@@ -125,6 +135,7 @@ export class AutonomyController {
       unit: '%',
       status: count === 0 ? ('ok' as Status) : ('critico' as Status),
       noConsumption: d.noConsumption,
+      invalidLeadTime: d.invalidLeadTime,
       itemsWithoutData: d.withoutData,
     };
   }
