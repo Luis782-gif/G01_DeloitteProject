@@ -1,3 +1,4 @@
+import { DetailLink } from '../detail/DetailLink';
 import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import { AbcParetoChart } from './AbcParetoChart';
 import { classCounts, type ParetoRow } from './abc';
@@ -32,7 +33,7 @@ export function AbcParetoView({ data, error }: { data: ParetoRow[] | null; error
         <tbody>
           {data.map((r) => (
             <tr key={r.itemRef}>
-              <td>{r.itemRef}</td>
+              <td><DetailLink kind="artigo" itemRef={r.itemRef} /></td>
               <td>{fmt(r.value)}</td>
               <td>{fmt(r.cumPct)}</td>
               <td>{fmt(r.refCumPct)}</td>

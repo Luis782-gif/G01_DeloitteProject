@@ -1,3 +1,4 @@
+import { DetailLink } from '../detail/DetailLink';
 import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import type { LeadTime } from './lead-time';
 
@@ -34,7 +35,7 @@ export function LeadTimeView({ data, error }: { data: LeadTime | null; error?: s
           <tbody>
             {data.byVendor.map((v) => (
               <tr key={v.vendorId}>
-                <td>{v.vendorId}</td>
+                <td><DetailLink kind="fornecedor" itemRef={v.vendorId} /></td>
                 <td>{fmt(v.mean)}</td>
                 <td>{fmt(v.stdDev)}</td>
                 <td>{fmtCv(v.cv)}</td>

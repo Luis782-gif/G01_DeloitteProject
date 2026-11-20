@@ -1,3 +1,4 @@
+import { DetailLink } from '../detail/DetailLink';
 import { KpiCard } from '../components/KpiCard';
 import { belowMinimumStatus, type BelowMinimum } from './below-minimum';
 
@@ -39,7 +40,7 @@ export function BelowMinimumView({ data, error }: { data: BelowMinimum | null; e
           <tbody>
             {data.items.map((i) => (
               <tr key={i.itemRef}>
-                <td>{i.itemRef}</td>
+                <td><DetailLink kind="artigo" itemRef={i.itemRef} /></td>
                 <td>{i.stock}</td>
                 <td>{i.min}</td>
                 <td>{i.referenceDate}</td>
