@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { FilterToggle, useCrossFilter } from '../filters/CrossFilter';
 import { barRows, fmtEur, type ExcessCapital } from './excess';
 
 /**
@@ -12,6 +13,7 @@ import { barRows, fmtEur, type ExcessCapital } from './excess';
 export function ExcessBarsView({ data, initialExpanded = null }: { data: ExcessCapital; initialExpanded?: string | null }) {
   const [expanded, setExpanded] = useState<string | null>(initialExpanded);
   const toggle = (type: string) => setExpanded((cur) => (cur === type ? null : type));
+  const { state, toggle: toggleFilter } = useCrossFilter();
 
   if (data.byType.length === 0) return <p>Nenhum artigo acima do máximo.</p>;
   const rows = barRows(data.byType, expanded);
@@ -25,9 +27,14 @@ export function ExcessBarsView({ data, initialExpanded = null }: { data: ExcessC
             <XAxis type="number" tickFormatter={(v: number) => `${Math.round(v / 1e6)} M€`} />
             <YAxis type="category" dataKey="label" width={140} />
             <Tooltip formatter={(v) => fmtEur(Number(v))} />
-            <Bar dataKey="valueEur" onClick={(row) => toggle((row as unknown as { type: string }).type)} cursor="pointer" isAnimationActive={false}>
+            <Bar dataKey="valueEur" onClick={(row) => toggleFilter('tipo', (row as unknown as { type: string }).type)} cursor="pointer" isAnimationActive={false}>
               {rows.map((r) => (
-                <Cell key={r.key} fill={r.level === 'tipo' ? '#1F6E7E' : '#9CCDD6'} />
+                <Cell
+                  key={r.key}
+                  fill={r.level === 'tipo' ? '#1F6E7E' : '#9CCDD6'}
+                  stroke={state.tipo === r.type ? 'var(--text)' : 'none'}
+                  strokeWidth={state.tipo === r.type ? 3 : 0}
+                />
               ))}
             </Bar>
           </BarChart>
@@ -45,9 +52,16 @@ export function ExcessBarsView({ data, initialExpanded = null }: { data: ExcessC
             <tr key={r.key} data-level={r.level}>
               <td>
                 {r.level === 'tipo' ? (
-                  <button type="button" aria-expanded={r.type === expanded} onClick={() => toggle(r.type)}>
-                    {r.label}
-                  </button>
+                  <>
+                    <button type="button" aria-expanded={r.type === expanded} onClick={() => toggle(r.type)}>
+                      {r.label}
+                    </button>{' '}
+                    <span data-testid="excess-type-filter">
+                      <FilterToggle filterKey="tipo" value={r.type}>
+                        Filtrar
+                      </FilterToggle>
+                    </span>
+                  </>
                 ) : (
                   <span style={{ paddingLeft: 24 }}>{r.label}</span>
                 )}
