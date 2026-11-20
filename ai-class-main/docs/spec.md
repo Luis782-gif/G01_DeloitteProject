@@ -494,3 +494,16 @@ Detalhes que a spec fixou e a equipa confirmou. Não há pontos em aberto.
 6. **Carregamento dos CSV:** o ETL carrega os **5 ficheiros**, como o enunciado exige. Os três que não alimentam KPI (`financial_data`, `patient_data`, `staff_data`) ficam normalizados e com qualidade assinalada (secções 3.3, 4.2 e 5).
 7. **Janela de estimativa do `σ`:** todos os snapshots do artigo até à data de corte, independentemente do início do período filtrado.
 8. **Exportação:** só CSV na onda 3; PDF fica opcional.
+
+## 17. Desvios e decisões de implementação (onda 1)
+
+Pontos em que a implementação da onda 1 fixou um detalhe que a spec deixava em aberto ou se afasta dela. Cada um foi confirmado no código.
+
+1. **Snapshot de referência depois dos filtros.** O snapshot de referência de cada artigo é escolhido **entre os snapshots já filtrados** (por tipo e fornecedor), não antes. Por isso filtrar por tipo pode mudar o universo e os contadores: sem filtro, 29 de 50 artigos têm folga negativa; com `tipo=Equipment`, 36 de 50 (verificado de forma independente). A classe ABC, em contrapartida, é calculada antes de tipo e fornecedor (AC-13).
+2. **`classe`, `cutA` e `cutB` em todos os endpoints.** O filtro `classe` e os cortes ABC (por defeito 80/95) são resolvidos em `resolveFilters` e entram em todos os endpoints que usam `filteredSnapshots`.
+3. **`distinguishDays`.** O parâmetro (por defeito 1 dia) decide a frase "nenhum fornecedor se distingue": verdadeiro quando (maior média − menor média) < `distinguishDays` (`kpis/vendor-risk.ts`).
+4. **Sazonalidade do tempo de reposição.** Agrega por **mês do ano** (1 a 12, todos os anos juntos), com o número de observações por mês; não é uma série temporal.
+5. **Frases-insight prudentes.** Como a triagem (K10) e a página Receita são de ondas posteriores, "Onde dói" usa "artigos de classe A com folga negativa" e "Receita" usa "artigos com folga negativa", sem falar de níveis de triagem.
+6. **Cross-filter.** Clicar na barra de excesso aplica o filtro `tipo`; a expansão Tipo → Artigo está no botão da tabela, não na barra.
+7. **Drill-through.** O painel lateral está ligado às tabelas de abaixo-do-mínimo, Pareto e fornecedores (`DetailLink`); a dispersão e a tabela de excesso não abrem o painel.
+8. **Testes com dados reais.** AC-03 e AC-40 correm em `apps/backend/test/real-data.spec.ts` e são ignorados se os CSV (fora do Git) não existirem em `DATA_DIR` ou `data/`.
