@@ -78,4 +78,112 @@ Start `claude` from the repository root, run `/status` to confirm it is connecte
 - `docs`: the agreed specification.
 - `data`: the original CSV files for your chosen assignment. Kept out of Git.
 - `CLAUDE.md`: instructions that Claude Code reads automatically.
-# ai-class
+## Executar a aplicação (em português)
+
+Requisitos: Node 24+ e npm. Não é preciso instalar PostgreSQL nem Docker: o PostgreSQL arranca por um pacote npm (ADR 0002).
+
+```bash
+npm install                 # uma só vez, na pasta ai-class-main
+cp .env.example .env        # configuração (sem segredos); .env está no .gitignore
+npm run db                  # terminal 1: PostgreSQL embedded (porta 54329, dados em apps/backend/.pgdata)
+npm run dev:backend         # terminal 2: API em http://localhost:3001/api (aplica as migrações ao arrancar)
+npm run dev:frontend        # terminal 3: aplicação em http://localhost:3000
+```
+
+Verificação: `http://localhost:3000/api/health` (via Next, que reencaminha `/api/*` para o backend) deve devolver `{"status":"ok",...}`.
+O browser só fala com o Next; só o backend acede à base de dados e (no ETL, ticket #4) aos CSV em `DATA_DIR`.
+
+Passos de ponta a ponta (primeira vez): `npm install --include=dev` (instala também o Jest e as ferramentas de teste), copiar `.env.example` para `.env`, colocar os 5 CSV em `data/` (ou apontar `DATA_DIR`), `npm run db`, `npm run etl`, `npm run dev:backend` e `npm run dev:frontend`; abrir `http://localhost:3000`. Para outro PostgreSQL em vez do embedded, ver "Outro PostgreSQL" abaixo.
+
+| Serviço | Porta por defeito | Variável |
+| --- | --- | --- |
+| Frontend (Next.js) | 3000 | `next dev -p` |
+| Backend (NestJS) | 3001 | `BACKEND_PORT` |
+| PostgreSQL embedded | 54329 | `DEV_DB_PORT` |
+
+### Variáveis de ambiente (`.env`, ver `.env.example`; sem segredos)
+
+| Variável | Função |
+| --- | --- |
+| `DATABASE_URL` | Ligação ao PostgreSQL (backend e ETL) |
+| `BACKEND_PORT` | Porta da API |
+| `BACKEND_URL` | Para onde o Next reencaminha `/api/*` (servidor a servidor) |
+| `DATA_DIR` | Pasta com os 5 CSV, lida só pelo ETL |
+
+### Arquitetura
+
+`browser → Next.js (frontend) → NestJS (API) → PostgreSQL`. O browser só fala com o Next; o Next reencaminha `/api/*` para o NestJS; só o NestJS acede à base de dados. Os CSV são lidos apenas pelo ETL, que os carrega para a base (estrela, 3NF). Todos os KPI, filtros e frases-insight são calculados no servidor, em SQL.
+
+### Do agente ao código: spec → ticket → teste → código
+
+1. **Spec**: `docs/spec.md` (objetivo, KPI, storyboard, contratos, critérios de aceitação AC-xx e conjuntos de teste calculados à mão na secção 12). O vocabulário está em `GLOSSARY.md` e as decisões difíceis de reverter em `docs/adr/` (0001 a 0003). Desvios da implementação: secção 17 da spec.
+2. **Tickets**: GitHub Issues (`gh issue list`), um por fatia vertical, todos filhos da spec (#1). Cada ticket tem critérios de aceitação que citam os AC e os valores de `docs/spec.md`.
+3. **Teste primeiro**: o critério vira um teste com o valor calculado à mão (`apps/backend/test/*.spec.ts` sobre a API real, `apps/frontend/src/**/*.test.ts(x)` para a interface), e só depois se escreve o código.
+4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`.
+
+| Ticket | Critério (spec) | Teste que o prova |
+| --- | --- | --- |
+| #5 Abaixo do mínimo | F1: 2 de 4 elegíveis, 1 excluído, 50 % | `backend/below-minimum.spec.ts` |
+| #9 Tempo médio de reposição | F1: (25+3+13+21+10)/5 = 14,4 dias | `backend/lead-time.spec.ts` |
+| #10 Classe ABC | Aula (cortes 66/91): A={2,5}, B={8,3}, C={1,4,7,6}; F1 (80/95) | `backend/abc.spec.ts` |
+| #11 Rotação | F2: 18 090 / 1267,33 = 14,274 | `backend/rotation.spec.ts` |
+| #8 Autonomia | F1: 1,82; 1,32; 9,73; 5,61; 2,64 (mediana 2,644) | `backend/autonomy.spec.ts` |
+
+### Refresh dos dados (ETL)
+
+`npm run etl` (com a base a correr) volta a carregar os CSV de `DATA_DIR` (ou da pasta passada como argumento) numa só transação: idempotente, nunca altera os CSV.
+Regista a execução em `etl_run` e o motivo de cada registo rejeitado/assinalado em `etl_quality_log`; os testes usam o mesmo `loadCsvFolder`.
+
+### Como aplicar os filtros num novo KPI
+
+Filtros globais: `periodo` (`2025`, `2025-Q3`, `2025-09`, `2025-01-01..2025-03-31`), `artigo` (`108:xray-machine`), `tipo` (do snapshot), `fornecedor` (`vendor_id`). O fim do período é a data de corte do snapshot de referência. Inválido = 400 `{ error, field }`.
+
+**Backend** (`apps/backend/src/filters/`): um endpoint de leitura só precisa de
+
+```ts
+@Get('meu-kpi') async meuKpi(@Query() query: Record<string, unknown>) {
+  const filters = await resolveFilters(this.pool, query);   // valida; lança 400
+  const q = filteredSnapshots(filters);                      // ou filteredSnapshots(filters, 3) se já usa $1 e $2
+  const { rows } = await this.pool.query(`WITH ${q.ctes} SELECT ... FROM ref WHERE x > $${q.params.length + 1}`, [...q.params, x]);
+  // devolver também itemsWithoutData: (SELECT count(*) FROM no_data)
+}
+```
+
+CTE disponíveis: `ref` (snapshot de referência por artigo: `ref_date`, `cutoff_date`, `stale`), `snaps` (todos os snapshots filtrados do período, para histórico/rotação/tendência), `period_snaps` (período + artigo, antes de tipo/fornecedor; é a base da classe ABC, spec 8.5), `no_data` (artigos sem snapshots no período: contar em "N artigos sem dados no período", nunca como zero) e `bounds` (`from_date`, `to_date`). `classe` e `triagem` estendem `ResolvedFilters`/`resolveFilters`/`filteredSnapshots`. Exemplo completo: `kpis/below-minimum.controller.ts`.
+
+**Frontend** (`apps/frontend/src/filters/`): o URL é a fonte de verdade. A página lê `parseFilterState(await searchParams)` e passa o mesmo `filters` a todos os visuais; cada visual (Server Component) chama `fetchWithFilters<T>('/api/...', filters, { ...extra })` (usa `apiPath`, que acrescenta os filtros ao pedido) e mostra `itemsWithoutData`; um 400 devolve `{ ok: false, message }`. A barra de slicers (`FilterBar`) está no layout e escreve no URL com `router.replace`; novos filtros acrescentam-se a `FILTER_KEYS` e ao `FilterBarView`.
+
+### Testes
+
+```bash
+npm test                    # backend (Jest + PostgreSQL embedded efémero + API HTTP) e frontend
+npm test -w @app/frontend    # só frontend (tsx --test sobre src/**/*.test.ts(x): tema, contraste WCAG, modo, componentes de estado)
+```
+
+Os testes de API usam `createTestApp()` (`apps/backend/test/harness/test-app.ts`): cria uma base nova e isolada,
+aplica as migrações, carrega opcionalmente uma pasta de CSV de teste (`fixture('f1')` em `apps/backend/test/fixtures/`)
+e devolve um cliente `supertest` sobre a API real. Ver `apps/backend/test/health.spec.ts`. O `close()` é idempotente e o harness fecha, no fim de cada teste, qualquer app que tenha ficado aberta. Em Windows, `embedded-pg.ts` destrói também os pipes de stdio do processo Postgres ao parar (ficavam abertos e o Jest não terminava).
+`apps/backend/test/real-data.spec.ts` confirma AC-03 e AC-40 com os CSV completos; é ignorado se os CSV não estiverem em `DATA_DIR` ou `data/`. `npm run typecheck` verifica os dois pacotes.
+
+### Outro PostgreSQL (nativo ou Docker)
+
+A aplicação só lê `DATABASE_URL`. Para usar outra instância, não corra `npm run db` e defina em `.env`, por exemplo:
+
+```
+DATABASE_URL=postgres://utilizador:palavra-passe@localhost:5432/stock
+```
+
+Com Docker: `docker run -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=stock -p 5432:5432 postgres:18`
+e `DATABASE_URL=postgres://postgres:postgres@localhost:5432/stock`. Os testes continuam a usar o Postgres embedded.
+
+### Como é calculado: acrescentar uma entrada e ligar o (i) a um cartão
+
+1. Criar `apps/backend/src/kpis/explain/entries/<id>.ts` (export default de um objeto com a forma de `ExplainEntry`: `id, title, formula, source, columns, unit, approximation, limitations`) e acrescentar **uma linha** de import e uma de lista em `explain/registry.ts`. O conteúdo fica em `GET /api/kpis/<id>/explain` (404 `{ error }` se o id não existir).
+2. No frontend, trocar `<KpiCard .../>` por `<KpiCardWithInfo kpiId="<id>" label=... value=... status=... />` (`src/explain/KpiCardWithInfo.tsx`); o botão (i) abre `ExplainPanel`, que vai buscar a entrada à API.
+3. Gráficos: `recharts` em componentes `'use client'` (ADR 0003); a página "Onde dói" tem a dispersão autonomia × tempo de reposição como exemplo (`src/kpis/AutonomyScatter.tsx`).
+
+### Drill-through (painel lateral)
+
+O estado fica no URL: `?detalhe=artigo:108:xray-machine` ou `?detalhe=fornecedor:V002`, combinável com os filtros globais; recarregar reabre o painel e fechá-lo (Esc ou "Fechar") remove só `detalhe`.
+Helper em `apps/frontend/src/detail/detail.ts`: `detailHref(paramsAtuais, 'artigo' | 'fornecedor', ref)` devolve o href relativo (`?...&detalhe=...`); `<DetailLink kind itemRef />` (client) usa-o com os filtros do URL atual; `closeDetailHref` fecha.
+API: `GET /api/items/:itemRef` e `GET /api/vendors/:vendorId` (404 `{ error }` se não existir; aceitam `periodo`/`tipo`/`classe`); o painel (`DetailPanel`) está montado no layout.

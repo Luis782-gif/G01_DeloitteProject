@@ -1,0 +1,6 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-08-05,107,Equipment,X-ray Machine,2270,284,4909,19636.33,405,21,V001
+2025-09-10,100,Equipment,Gloves,1293,656,3747,311.77,489,10,V003
+2025-11-21,108,Equipment,X-ray Machine,715,953,1475,18305.37,392,25,V001
+2025-11-22,104,Equipment,Surgical Mask,542,589,1327,8393.67,411,3,V003
+2025-12-30,108,Consumable,Gloves,1450,990,767,18954.09,149,13,V003

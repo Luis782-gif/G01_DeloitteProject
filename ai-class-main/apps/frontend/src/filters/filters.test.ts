@@ -1,0 +1,52 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { apiPath, filtersToSearch, parseFilterState, shouldCommitPeriod, toggleFilter, updateSearch } from './filters';
+
+test('shouldCommitPeriod: só confirma quando o valor difere do estado do URL e do último enviado', () => {
+  assert.equal(shouldCommitPeriod(' 2025-Q1 ', '', ''), true);
+  assert.equal(shouldCommitPeriod('2025-Q1', '2025-Q1', '2025-Q1'), false);
+  // Enter já enviou "2025-Q1" mas o URL ainda não refletiu: o blur seguinte não repete a navegação
+  assert.equal(shouldCommitPeriod('2025-Q1', '', '2025-Q1'), false);
+  assert.equal(shouldCommitPeriod('', '2025', '2025'), true);
+});
+
+test('toggleFilter: aplica o filtro; clicar de novo no mesmo valor remove-o', () => {
+  assert.equal(toggleFilter('', 'classe', 'A'), 'classe=A');
+  assert.equal(toggleFilter('classe=A', 'classe', 'A'), '');
+});
+
+test('toggleFilter: outro valor substitui; combina com slicers e preserva detalhe', () => {
+  assert.equal(toggleFilter('classe=A', 'classe', 'B'), 'classe=B');
+  assert.equal(toggleFilter('periodo=2025-Q3&detalhe=x%3A1', 'tipo', 'Equipment'), 'periodo=2025-Q3&detalhe=x%3A1&tipo=Equipment');
+  assert.equal(toggleFilter('tipo=Equipment&detalhe=x%3A1', 'tipo', 'Equipment'), 'detalhe=x%3A1');
+});
+
+test('lê os filtros do URL (objeto de searchParams do Next ou URLSearchParams) e ignora o resto', () => {
+  assert.deepEqual(parseFilterState({ periodo: '2025-Q3', tipo: 'Equipment', detalhe: 'x', fornecedor: '' }), {
+    periodo: '2025-Q3',
+    tipo: 'Equipment',
+  });
+  assert.deepEqual(parseFilterState(new URLSearchParams('artigo=108:xray-machine&fornecedor=V002')), {
+    artigo: '108:xray-machine',
+    fornecedor: 'V002',
+  });
+  assert.deepEqual(parseFilterState({ tipo: ['A', 'B'] }), { tipo: 'A' }); // repetido: vale o primeiro
+});
+
+test('escreve os filtros numa ordem estável, com valores codificados', () => {
+  assert.equal(filtersToSearch({}), '');
+  assert.equal(filtersToSearch({ tipo: 'Equipment', periodo: '2025-01-01..2025-03-31' }), 'periodo=2025-01-01..2025-03-31&tipo=Equipment');
+  assert.equal(filtersToSearch({ artigo: '108:xray-machine' }), 'artigo=108%3Axray-machine');
+});
+
+test('o mesmo estado produz o mesmo pedido à API (consistência entre visuais)', () => {
+  const f = { periodo: '2025-Q3', tipo: 'Equipment' };
+  assert.equal(apiPath('/api/kpis/below-minimum', f), '/api/kpis/below-minimum?periodo=2025-Q3&tipo=Equipment');
+  assert.equal(apiPath('/api/kpis/below-minimum', f, { pageSize: 100 }), '/api/kpis/below-minimum?periodo=2025-Q3&tipo=Equipment&pageSize=100');
+  assert.equal(apiPath('/api/filters/options', {}), '/api/filters/options');
+});
+
+test('alterar um filtro preserva os outros parâmetros do URL; vazio remove-o', () => {
+  assert.equal(updateSearch('periodo=2025&detalhe=fornecedor:V002', 'tipo', 'Consumable'), 'periodo=2025&detalhe=fornecedor%3AV002&tipo=Consumable');
+  assert.equal(updateSearch('periodo=2025&tipo=Equipment', 'periodo', ''), 'tipo=Equipment');
+});

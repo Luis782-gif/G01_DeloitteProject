@@ -101,7 +101,7 @@ Regra geral: **nunca apagar em silêncio**. Cada registo problemático é rejeit
 | R12 | Assinalar | Stock < 0, custo ≤ 0, consumo < 0 ou LT ≤ 0 | Excluído dos KPI que usam a coluna inválida |
 | R13 | Assinalar | `item_type` fora da lista (Consumable, Equipment) | Aparece como "Desconhecido" no filtro de tipo |
 | R20 | Assinalar | `patient_stay`: alta anterior à admissão | Sem KPI afetado (ficheiro fora dos KPI) |
-| R21 | Assinalar | `patient_stay`: `bed_days` difere mais de 1 dia de (alta − admissão) | Idem |
+| R21 | Assinalar | `patient_stay`: `bed_days` difere mais de 1 dia de (alta − admissão), em dias completos decorridos (truncados) | Idem |
 | R22 | Assinalar | Célula de lista não decomponível (`Supplies_Used`, `Staff_Needed`) | Não gera linhas na tabela ponte; registo mantido |
 | R30 | Assinalar | `staff_shift`: duração (fim − início, com viragem de dia) difere mais de 0,01 h de `hours_worked` | Sem KPI afetado |
 
@@ -466,7 +466,7 @@ Exemplo do slide 22 com cortes 66 % e 91 % (as quebras da aula): **A = {002, 005
 ## 14. Limitações e fora de âmbito
 
 **Limitações dos dados:** ver secção 4.3 e `docs/data-quality.md`. Em concreto:
-1. **Os 3 fornecedores são indistinguíveis pelo LT do inventário** (médias 14,8 a 15,6 dias; desvio ≈ 8,5). A P5 conclui isso com honestidade. A única diferença é o "prometido vs. real" (3 linhas).
+1. **Os 3 fornecedores são indistinguíveis pelo LT do inventário** (médias de 14,85 a 15,55 dias, diferença máxima de 0,7 dia; desvio populacional de 8,4 a 8,8). A P5 conclui isso com honestidade. A única diferença é o "prometido vs. real" (3 linhas).
 2. **`Unit_Cost` é aleatório por registo.** O ABC, o capital em excesso (236,6 M€) e o valor imobilizado (1 187 M€) refletem o snapshot, não o valor real dos artigos.
 3. **Cerca de 10 observações por artigo.** `σ` do stock de segurança, variabilidade do LT e sazonalidade têm confiança baixa.
 4. Autonomia, calendário de rutura e antes/depois **assumem consumo constante**.
@@ -494,3 +494,34 @@ Detalhes que a spec fixou e a equipa confirmou. Não há pontos em aberto.
 6. **Carregamento dos CSV:** o ETL carrega os **5 ficheiros**, como o enunciado exige. Os três que não alimentam KPI (`financial_data`, `patient_data`, `staff_data`) ficam normalizados e com qualidade assinalada (secções 3.3, 4.2 e 5).
 7. **Janela de estimativa do `σ`:** todos os snapshots do artigo até à data de corte, independentemente do início do período filtrado.
 8. **Exportação:** só CSV na onda 3; PDF fica opcional.
+
+## 17. Desvios e decisões de implementação (onda 1)
+
+Pontos em que a implementação da onda 1 fixou um detalhe que a spec deixava em aberto ou se afasta dela. Cada um foi confirmado no código.
+
+1. **Snapshot de referência depois dos filtros.** O snapshot de referência de cada artigo é escolhido **entre os snapshots já filtrados** (por tipo e fornecedor), não antes. Por isso filtrar por tipo pode mudar o universo e os contadores: sem filtro, 29 de 50 artigos têm folga negativa; com `tipo=Equipment`, 36 de 50 (verificado de forma independente). A classe ABC, em contrapartida, é calculada antes de tipo e fornecedor (AC-13).
+2. **`classe`, `cutA` e `cutB` em todos os endpoints.** O filtro `classe` e os cortes ABC (por defeito 80/95) são resolvidos em `resolveFilters` e entram em todos os endpoints que usam `filteredSnapshots`.
+3. **`distinguishDays`.** O parâmetro (por defeito 1 dia) decide a frase "nenhum fornecedor se distingue": verdadeiro quando (maior média − menor média) < `distinguishDays` (`kpis/vendor-risk.ts`).
+4. **Sazonalidade do tempo de reposição.** Agrega por **mês do ano** (1 a 12, todos os anos juntos), com o número de observações por mês; não é uma série temporal.
+5. **Frases-insight prudentes.** Como a triagem (K10) e a página Receita são de ondas posteriores, "Onde dói" usa "artigos de classe A com folga negativa" e "Receita" usa "artigos com folga negativa", sem falar de níveis de triagem.
+6. **Cross-filter.** Clicar na barra de excesso aplica o filtro `tipo`; a expansão Tipo → Artigo está no botão da tabela, não na barra.
+7. **Drill-through.** O painel lateral está ligado às tabelas de abaixo-do-mínimo, Pareto e fornecedores (`DetailLink`); a dispersão e a tabela de excesso não abrem o painel.
+8. **Testes com dados reais.** AC-03 e AC-40 correm em `apps/backend/test/real-data.spec.ts` e são ignorados se os CSV (fora do Git) não existirem em `DATA_DIR` ou `data/`.
+
+### Seguimentos conhecidos (code-review da onda 1)
+
+Achados do code-review que **não** foram alterados agora:
+
+- **H. Desempenho.** Cada endpoint repete a cadeia de CTE de `filteredSnapshots` várias vezes por pedido, e o endpoint de insights multiplica isto ao chamar vários KPI. Com ~10 snapshots por artigo não é um problema; fica como otimização futura (materializar a cadeia numa tabela temporária por pedido, ou cache por filtro).
+- **I. Injeção de dependências.** `InsightsController` instancia outros controladores com `new X(pool)` e chama os seus handlers diretamente, fora da injeção do Nest. Funciona e está coberto por testes; refatorar para serviços partilhados é uma mudança estrutural que não cabe numa correção.
+- **J. `Avg_Usage_Per_Day` decimal.** É rejeitado no ETL (R03) por a coluna ser inteira. Não é um defeito: a spec define-o como inteiro e a rejeição fica registada com motivo (nada se perde em silêncio).
+
+Corrigido no mesmo review (A a G):
+
+- **A.** ABC: com total do período <= 0 já não há divisão por zero; todos os artigos ficam em classe C.
+- **B.** `artigo=<id>:slug` com id fora do intervalo inteiro: 400 `{ error, field: 'artigo' }` no filtro e 404 `{ error }` no detalhe.
+- **C.** Folga: registos com tempo de reposição <= 0 (R12) ficam sem folga (como no K3 e no índice de risco), fora da mediana, da rutura prevista e de `pctAtRisk`; contam-se em `invalidLeadTime`.
+- **D.** `slackOk` tem de ser maior que `slackCritical` (400 com `field`). Na rutura prevista mantém-se OK se 0 artigos e crítico se > 0 ("= K6 crítico"), agora dito na entrada "Como é calculado".
+- **E (parcial).** Rotação: um período sem nenhum snapshot nos dados dá 0 dias, rotação nula e `noData: true`. **Não** se corta o período ao intervalo real dos snapshots: a F2 (12.2) exige 90 dias de 2025-Q1 com snapshots só entre 2025-01-04 e 2025-02-18, o que é incompatível com essa interseção. Fica registado na entrada "Como é calculado" que um período muito mais largo do que os dados sobrestima a rotação.
+- **F.** Cortes ABC: o erro indica o parâmetro enviado (`cutA` ou `cutB`) e o valor por defeito do outro.
+- **G.** Campo de período: Enter e blur não disparam duas navegações idênticas (`shouldCommitPeriod`).

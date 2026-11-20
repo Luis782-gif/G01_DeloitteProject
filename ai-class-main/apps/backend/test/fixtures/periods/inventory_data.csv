@@ -1,0 +1,8 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-01-15,1,Equipment,Alpha,10,50,200,1.00,1,1,V001
+2025-04-10,1,Equipment,Alpha,80,50,200,1.00,1,1,V001
+2025-08-20,1,Equipment,Alpha,20,50,200,1.00,1,1,V001
+2025-02-10,2,Consumable,Beta Item,5,50,200,1.00,1,1,V002
+2025-09-15,3,Equipment,Gamma,100,50,200,1.00,1,1,V002
+2025-11-01,3,Equipment,Gamma,30,50,200,1.00,1,1,V002
+2025-07-05,4,Consumable,Delta,5,50,200,1.00,1,1,V001
