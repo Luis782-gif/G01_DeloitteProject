@@ -1,3 +1,4 @@
+import { PageTiles } from '../layout/PageTiles';
 import { parseFilterState } from '../filters/filters';
 import { InsightSection } from '../insights/InsightSection';
 import { AutonomySection } from '../kpis/AutonomySection';
@@ -14,14 +15,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <h1>Pulso do hospital</h1>
-      <InsightSection page="pulso" filters={filters} />
-      <AutonomySection filters={filters} />
-      <BelowMinimumSection filters={filters} />
-      <TriageSection filters={filters} />
-      <RotationSection filters={filters} />
-      <ExcessCardsSection filters={filters} />
-      <LeadTimeSection filters={filters} />
-      <TrendSection filters={filters} />
+      <PageTiles
+        page="pulso"
+        nodes={{
+          'insights': <InsightSection page="pulso" filters={filters} />,
+          'autonomia': <AutonomySection filters={filters} />,
+          'abaixo-do-minimo': <BelowMinimumSection filters={filters} />,
+          'triagem': <TriageSection filters={filters} />,
+          'rotacao': <RotationSection filters={filters} />,
+          'excesso': <ExcessCardsSection filters={filters} />,
+          'prazo-entrega': <LeadTimeSection filters={filters} />,
+          'tendencia': <TrendSection filters={filters} />,
+        }}
+      />
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { PageTiles } from '../../layout/PageTiles';
 import { parseFilterState } from '../../filters/filters';
 import { InsightSection } from '../../insights/InsightSection';
 import { AbcParetoSection } from '../../kpis/AbcParetoSection';
@@ -10,11 +11,16 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <h1>Onde dói</h1>
-      <InsightSection page="onde-doi" filters={filters} />
-      <ScatterSection filters={filters} />
-      <AbcParetoSection filters={filters} />
-      <ExcessBarsSection filters={filters} />
-      <CalendarSection filters={filters} />
+      <PageTiles
+        page="onde-doi"
+        nodes={{
+          'insights': <InsightSection page="onde-doi" filters={filters} />,
+          'dispersao': <ScatterSection filters={filters} />,
+          'pareto-abc': <AbcParetoSection filters={filters} />,
+          'excesso-barras': <ExcessBarsSection filters={filters} />,
+          'calendario': <CalendarSection filters={filters} />,
+        }}
+      />
     </>
   );
 }

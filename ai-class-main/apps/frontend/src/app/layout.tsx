@@ -7,13 +7,17 @@ import { QualityFooter } from './quality-footer';
 import { DetailPanel } from '../detail/DetailPanel';
 import { GlobalSearch } from '../search/GlobalSearch';
 import { ModeToggle } from '../components/ModeToggle';
+import { cookies } from 'next/headers';
+import { ProfileSelect } from '../layout/ProfileSelect';
+import { PROFILE_COOKIE, parseProfile } from '../layout/model';
 import { initModeScript } from '../theme/mode';
 import { EcgSection } from '../ecg/EcgSection';
 import { themeCss } from '../theme/tokens';
 
 export const metadata = { title: 'Stock hospitalar' };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const profile = parseProfile((await cookies()).get(PROFILE_COOKIE)?.value);
   return (
     <html lang="pt-PT" data-mode="consulta" suppressHydrationWarning>
       <head>
@@ -32,6 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <EcgSection />
           </Suspense>
           <GlobalSearch />
+          <ProfileSelect value={profile} />
           <ModeToggle />
         </nav>
         <FilterBarSection />
