@@ -1,4 +1,5 @@
 import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
+import { FilterToggle } from '../filters/CrossFilter';
 import { AbcParetoChart } from './AbcParetoChart';
 import { classCounts, type ParetoRow } from './abc';
 
@@ -14,9 +15,14 @@ export function AbcParetoView({ data, error }: { data: ParetoRow[] | null; error
     <section aria-label="Pareto ABC">
       <h2>Pareto ABC</h2>
       <KpiCardWithInfo kpiId="abc" label="Artigos de classe A" value={String(counts.A)} unit={`de ${data.length}`} status="ok" />
-      <p data-testid="abc-summary">
-        Classes (cortes 80/95 % do valor de stock): A: {counts.A} · B: {counts.B} · C: {counts.C}
-      </p>
+      <p data-testid="abc-summary">Classes (cortes 80/95 % do valor de stock). Clique numa classe para filtrar a página:</p>
+      <div data-testid="abc-class-filter" role="group" aria-label="Filtrar por classe ABC" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        {(['A', 'B', 'C'] as const).map((c) => (
+          <FilterToggle key={c} filterKey="classe" value={c}>
+            {`${c}: ${counts[c]}`}
+          </FilterToggle>
+        ))}
+      </div>
       <AbcParetoChart rows={data} />
       <table data-testid="abc-table">
         <caption>Valor de stock por artigo, por ordem decrescente</caption>
