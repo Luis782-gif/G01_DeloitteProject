@@ -1,5 +1,6 @@
 import type { ExplainEntry } from './explain-entry';
 import abc from './entries/abc';
+import beforeAfter from './entries/before-after';
 import calendar from './entries/calendar';
 import autonomy from './entries/autonomy';
 import excessCapital from './entries/excess-capital';
@@ -32,6 +33,7 @@ const ENTRIES: ExplainEntry[] = [
   reorderPoint,
   reorderSuggestion,
   calendar,
+  beforeAfter,
 ];
 
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));

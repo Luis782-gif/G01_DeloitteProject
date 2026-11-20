@@ -1,5 +1,6 @@
 import { parseFilterState } from '../../filters/filters';
 import { InsightSection } from '../../insights/InsightSection';
+import { BeforeAfterSection } from '../../kpis/BeforeAfterSection';
 import { ReorderSection } from '../../kpis/ReorderSection';
 
 /** Cada bloco da Receita é uma secção independente (um componente por bloco): acrescentar uma linha por bloco novo. */
@@ -10,6 +11,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <h1>Receita</h1>
       <InsightSection page="receita" filters={filters} />
       <ReorderSection filters={filters} />
+      <BeforeAfterSection filters={filters} />
     </>
   );
 }
