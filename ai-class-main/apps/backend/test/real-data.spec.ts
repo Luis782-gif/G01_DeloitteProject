@@ -42,6 +42,11 @@ describeReal('dados completos (AC-03, AC-40)', () => {
     expect(body.pct).toBeCloseTo(19.9, 1);
   });
 
+  it('antes vs. depois: antes 1 187 053 872,67, libertado 236 614 283,06 (19,93 %), depois 950 439 589,61, 19 artigos', async () => {
+    const { body } = await t.api.get('/api/impact/before-after').expect(200);
+    expect(body).toEqual({ before: 1187053872.67, after: 950439589.61, released: 236614283.06, releasedPct: 19.93, itemsAboveMax: 19 });
+  });
+
   it('AC-40: 6 artigos com autonomia > 60 dias e stock parado de 112 653 424 €', async () => {
     const { body } = await t.api.get('/api/kpis/idle-stock').expect(200);
     expect(body.itemsOver).toBe(6);

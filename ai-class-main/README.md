@@ -182,6 +182,10 @@ e `DATABASE_URL=postgres://postgres:postgres@localhost:5432/stock`. Os testes co
 2. No frontend, trocar `<KpiCard .../>` por `<KpiCardWithInfo kpiId="<id>" label=... value=... status=... />` (`src/explain/KpiCardWithInfo.tsx`); o botão (i) abre `ExplainPanel`, que vai buscar a entrada à API.
 3. Gráficos: `recharts` em componentes `'use client'` (ADR 0003); a página "Onde dói" tem a dispersão autonomia × tempo de reposição como exemplo (`src/kpis/AutonomyScatter.tsx`).
 
+### Receita: antes vs. depois do capital imobilizado
+
+`GET /api/impact/before-after` (filtros comuns) devolve `{ before, after, released, releasedPct, itemsAboveMax }`. Regra explícita (spec 8.4): suspendendo as encomendas dos artigos acima do máximo até o stock voltar ao máximo, liberta-se o capital em excesso K7; `before` = valor de stock total, `after = before - released`. Não prevê consumo nem preços e os € refletem custos unitários irrealistas. Reutiliza `loadExcess` de `excess-capital.controller.ts`; bloco `kpis/BeforeAfterSection.tsx`, entrada `before-after` em "Como é calculado".
+
 ### Receita: sugestão de encomenda e CSV
 
 `GET /api/reorder-suggestions` (filtros comuns) lista os artigos com stock < ponto de encomenda, por nível de triagem decrescente e depois folga (stock - PE) crescente; artigos sem consumo não têm PE e só contam em `withoutConsumption`. Quantidade sugerida (**heurística, sem QEE**): `max_capacity - stock`; se o máximo for inconsistente (R11) ou inferior ao PE, `PE - stock` (dito no motivo). `GET /api/reorder-suggestions/export.csv` devolve a mesma lista em UTF-8 com BOM, separador `;`. A página Receita compõe-se de secções independentes (`kpis/ReorderSection.tsx` é a primeira; cada bloco novo é um `<XSection filters={filters} />` em `app/receita/page.tsx`).
