@@ -21,6 +21,10 @@ export interface TestApp {
   close(): Promise<void>;
 }
 
+/** Apps criadas dentro de um teste e ainda abertas (ver a rede de segurança no fim do ficheiro). */
+const open = new Set<TestApp>();
+let inTest = false;
+
 /**
  * Seam principal dos testes: base de dados nova e isolada (migrada), opcionalmente carregada
  * a partir de uma pasta de CSV de teste, com a API HTTP real por cima.
@@ -49,12 +53,16 @@ export async function createTestApp(opts: { csvDir?: string } = {}): Promise<Tes
   const app = await createApp(databaseUrl);
   await app.init();
 
-  return {
+  let closed = false;
+  const handle: TestApp = {
     app,
     api: request(app.getHttpServer()),
     pool,
     databaseUrl,
     async close() {
+      if (closed) return;
+      closed = true;
+      open.delete(handle);
       await app.close();
       await pool.end();
       const a = new Pool({ connectionString: adminUrl });
@@ -62,4 +70,18 @@ export async function createTestApp(opts: { csvDir?: string } = {}): Promise<Tes
       await a.end();
     },
   };
+  if (inTest) open.add(handle); // apps de beforeAll ficam a cargo do afterAll do próprio suite
+  return handle;
 }
+
+/**
+ * Rede de segurança: um teste que crie mais de uma app (ou que reatribua `t`) deixaria Pools e servidores
+ * abertos e o Jest ficaria pendurado no fim da execução. Fecha tudo o que ficou aberto após cada teste.
+ */
+beforeEach(() => {
+  inTest = true;
+});
+afterEach(async () => {
+  for (const t of [...open]) await t.close();
+  inTest = false;
+});
