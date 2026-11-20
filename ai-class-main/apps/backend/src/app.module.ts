@@ -19,6 +19,7 @@ import { SimulationsController } from './kpis/simulations.controller';
 import { ReorderSuggestionsController } from './kpis/reorder-suggestions.controller';
 import { TrendController } from './kpis/trend.controller';
 import { VendorsController } from './kpis/vendors.controller';
+import { LayoutsController } from './layouts/layouts.controller';
 import { MetaController } from './meta.controller';
 
 @Module({})
@@ -27,7 +28,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController, ReorderSuggestionsController, BeforeAfterController, SimulationsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController, ReorderSuggestionsController, BeforeAfterController, SimulationsController, LayoutsController],
     };
   }
 }
