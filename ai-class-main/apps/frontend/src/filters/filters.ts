@@ -41,6 +41,12 @@ export function updateSearch(currentSearch: string, key: FilterKey, value: strin
   return [...params.entries()].map(([k, v]) => enc(k, v)).join('&');
 }
 
+/** Cross-filter: aplica `key=value`; se já estava aplicado remove-o. Mesmo estado do URL que os slicers. */
+export function toggleFilter(currentSearch: string, key: FilterKey, value: string): string {
+  const current = new URLSearchParams(currentSearch).get(key);
+  return updateSearch(currentSearch, key, current === value ? '' : value);
+}
+
 export interface FilterOptions {
   items: { itemRef: string; name: string }[];
   types: string[];

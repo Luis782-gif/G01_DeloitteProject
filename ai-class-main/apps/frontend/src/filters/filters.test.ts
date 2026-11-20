@@ -1,6 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { apiPath, filtersToSearch, parseFilterState, updateSearch } from './filters';
+import { apiPath, filtersToSearch, parseFilterState, toggleFilter, updateSearch } from './filters';
+
+test('toggleFilter: aplica o filtro; clicar de novo no mesmo valor remove-o', () => {
+  assert.equal(toggleFilter('', 'classe', 'A'), 'classe=A');
+  assert.equal(toggleFilter('classe=A', 'classe', 'A'), '');
+});
+
+test('toggleFilter: outro valor substitui; combina com slicers e preserva detalhe', () => {
+  assert.equal(toggleFilter('classe=A', 'classe', 'B'), 'classe=B');
+  assert.equal(toggleFilter('periodo=2025-Q3&detalhe=x%3A1', 'tipo', 'Equipment'), 'periodo=2025-Q3&detalhe=x%3A1&tipo=Equipment');
+  assert.equal(toggleFilter('tipo=Equipment&detalhe=x%3A1', 'tipo', 'Equipment'), 'detalhe=x%3A1');
+});
 
 test('lê os filtros do URL (objeto de searchParams do Next ou URLSearchParams) e ignora o resto', () => {
   assert.deepEqual(parseFilterState({ periodo: '2025-Q3', tipo: 'Equipment', detalhe: 'x', fornecedor: '' }), {
