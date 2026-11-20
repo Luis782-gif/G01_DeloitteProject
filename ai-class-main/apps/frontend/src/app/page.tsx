@@ -1,4 +1,5 @@
 import { parseFilterState } from '../filters/filters';
+import { InsightSection } from '../insights/InsightSection';
 import { AutonomySection } from '../kpis/AutonomySection';
 import { BelowMinimumSection } from '../kpis/BelowMinimumSection';
 import { ExcessCardsSection } from '../kpis/ExcessSections';
@@ -12,6 +13,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <h1>Pulso do hospital</h1>
+      <InsightSection page="pulso" filters={filters} />
       <AutonomySection filters={filters} />
       <BelowMinimumSection filters={filters} />
       <RotationSection filters={filters} />
