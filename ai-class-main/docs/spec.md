@@ -525,3 +525,12 @@ Corrigido no mesmo review (A a G):
 - **E (parcial).** Rotação: um período sem nenhum snapshot nos dados dá 0 dias, rotação nula e `noData: true`. **Não** se corta o período ao intervalo real dos snapshots: a F2 (12.2) exige 90 dias de 2025-Q1 com snapshots só entre 2025-01-04 e 2025-02-18, o que é incompatível com essa interseção. Fica registado na entrada "Como é calculado" que um período muito mais largo do que os dados sobrestima a rotação.
 - **F.** Cortes ABC: o erro indica o parâmetro enviado (`cutA` ou `cutB`) e o valor por defeito do outro.
 - **G.** Campo de período: Enter e blur não disparam duas navegações idênticas (`shouldCommitPeriod`).
+
+## 18. Desvios e decisões de implementação (onda 2)
+
+### Calendário de rutura iminente (#20)
+
+- **Resposta.** `GET /api/shortage-calendar` devolve `{ cutoffDate, items, noConsumption }` (e não um array simples): `items` ordenado por data de esgotamento com `{ itemRef, name, depletionDate, autonomyDays, referenceDate, stale, alreadyDepleted }`; `noConsumption` é a lista à parte dos artigos sem consumo (sem data).
+- **Truncagem.** Data de esgotamento = data do snapshot de referência + **parte inteira** da autonomia em dias (1,824 dias dá +1 dia; 9,731 dá +9). Não se arredonda para cima.
+- **Já esgotado.** `alreadyDepleted` quando a data é anterior à data de corte do período (`cutoffDate`); a interface mostra "Já esgotado (dado desatualizado)". `stale` é o indicador existente (snapshot a mais de 90 dias do corte).
+- **Tempo de reposição** não entra na data (inválido <= 0 não a afeta). Ressalva "assume consumo constante" no visual e em `calendar` ("Como é calculado").
