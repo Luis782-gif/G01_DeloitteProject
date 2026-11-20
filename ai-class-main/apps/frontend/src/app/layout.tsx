@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PAGES } from './pages';
 import { FilterBarSection } from '../filters/FilterBarSection';
 import { QualityFooter } from './quality-footer';
+import { DetailPanel } from '../detail/DetailPanel';
 import { ModeToggle } from '../components/ModeToggle';
 import { initModeScript } from '../theme/mode';
 import { themeCss } from '../theme/tokens';
@@ -32,6 +33,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <CrossFilterProvider>
             <main className="app-main">{children}</main>
           </CrossFilterProvider>
+        </Suspense>
+        <Suspense fallback={null}>
+          <DetailPanel />
         </Suspense>
         <QualityFooter />
       </body>

@@ -144,3 +144,9 @@ e `DATABASE_URL=postgres://postgres:postgres@localhost:5432/stock`. Os testes co
 1. Criar `apps/backend/src/kpis/explain/entries/<id>.ts` (export default de um objeto com a forma de `ExplainEntry`: `id, title, formula, source, columns, unit, approximation, limitations`) e acrescentar **uma linha** de import e uma de lista em `explain/registry.ts`. O conteúdo fica em `GET /api/kpis/<id>/explain` (404 `{ error }` se o id não existir).
 2. No frontend, trocar `<KpiCard .../>` por `<KpiCardWithInfo kpiId="<id>" label=... value=... status=... />` (`src/explain/KpiCardWithInfo.tsx`); o botão (i) abre `ExplainPanel`, que vai buscar a entrada à API.
 3. Gráficos: `recharts` em componentes `'use client'` (ADR 0003); a página "Onde dói" tem a dispersão autonomia × tempo de reposição como exemplo (`src/kpis/AutonomyScatter.tsx`).
+
+### Drill-through (painel lateral)
+
+O estado fica no URL: `?detalhe=artigo:108:xray-machine` ou `?detalhe=fornecedor:V002`, combinável com os filtros globais; recarregar reabre o painel e fechá-lo (Esc ou "Fechar") remove só `detalhe`.
+Helper em `apps/frontend/src/detail/detail.ts`: `detailHref(paramsAtuais, 'artigo' | 'fornecedor', ref)` devolve o href relativo (`?...&detalhe=...`); `<DetailLink kind itemRef />` (client) usa-o com os filtros do URL atual; `closeDetailHref` fecha.
+API: `GET /api/items/:itemRef` e `GET /api/vendors/:vendorId` (404 `{ error }` se não existir; aceitam `periodo`/`tipo`/`classe`); o painel (`DetailPanel`) está montado no layout.
