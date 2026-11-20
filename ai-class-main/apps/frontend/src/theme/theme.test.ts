@@ -49,3 +49,9 @@ test('CSS do tema: Consulta por defeito, Bloco operatório por atributo, pulso d
   assert.ok(rm, 'falta bloco prefers-reduced-motion');
   assert.match(rm[1], /\.pulse-icon[^}]*animation:\s*none/);
 });
+
+test('linha ECG: cor do traço com contraste >= 3 sobre a superfície em ambos os modos', () => {
+  for (const m of Object.values(MODES)) {
+    assert.ok(contrastRatio(m.textMuted, m.surface) >= 3, `ecg/${m.label}`);
+  }
+});

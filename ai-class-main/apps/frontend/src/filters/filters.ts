@@ -3,7 +3,7 @@
  * O URL é a fonte de verdade (`?periodo=2025-Q3&tipo=Equipment`): sobrevive a recarregar e partilha-se.
  * Ponto de extensão: `classe` e `triagem` acrescentam-se a FILTER_KEYS (e ao FilterBar).
  */
-export const FILTER_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe'] as const;
+export const FILTER_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe', 'triagem'] as const;
 export type FilterKey = (typeof FILTER_KEYS)[number];
 export type FilterState = Partial<Record<FilterKey, string>>;
 

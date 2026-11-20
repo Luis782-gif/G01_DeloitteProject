@@ -7,6 +7,7 @@ import { QualityFooter } from './quality-footer';
 import { DetailPanel } from '../detail/DetailPanel';
 import { ModeToggle } from '../components/ModeToggle';
 import { initModeScript } from '../theme/mode';
+import { EcgSection } from '../ecg/EcgSection';
 import { themeCss } from '../theme/tokens';
 
 export const metadata = { title: 'Stock hospitalar' };
@@ -26,6 +27,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Link>
           ))}
           <span className="spacer" />
+          <Suspense fallback={null}>
+            <EcgSection />
+          </Suspense>
           <ModeToggle />
         </nav>
         <FilterBarSection />

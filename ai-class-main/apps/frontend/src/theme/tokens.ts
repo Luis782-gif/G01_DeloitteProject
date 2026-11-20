@@ -1,3 +1,4 @@
+import { ecgCss } from '../ecg/ecg';
 /** Azul-petróleo: 5 tons de intensidade (spec §9). */
 export const TONES = {
   1: '#E3F1F3',
@@ -89,5 +90,6 @@ button { font: inherit; color: var(--text); background: var(--surface); border: 
 @media (prefers-reduced-motion: reduce) {
   .pulse-icon { animation: none; }
 }
+${ecgCss()}
 `.trim();
 }

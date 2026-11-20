@@ -70,6 +70,7 @@ export function FilterBarView({ options, state, onChange }: { options: FilterOpt
       {select('tipo', 'Tipo', (options?.types ?? []).map((t) => ({ value: t, label: t })))}
       {select('fornecedor', 'Fornecedor', (options?.vendors ?? []).map((v) => ({ value: v.vendorId, label: `${v.vendorId} · ${v.name}` })))}
       {select('classe', 'Classe ABC', ['A', 'B', 'C'].map((c) => ({ value: c, label: c })))}
+      {select('triagem', 'Triagem', ['1', '2', '3', '4', '5', '4,5'].map((n) => ({ value: n, label: n.length > 1 ? 'Níveis 4 e 5' : `Nível ${n}` })))}
       {options?.dateRange.min && (
         <small style={{ color: 'var(--text-muted)' }}>
           Dados de {options.dateRange.min} a {options.dateRange.max}
