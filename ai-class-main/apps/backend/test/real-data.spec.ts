@@ -48,6 +48,11 @@ describeReal('dados completos (AC-03, AC-40)', () => {
     expect(Math.round(body.valueEur)).toBe(112653424);
   });
 
+  it('AC-41: triagem 5 / 9 / 2 / 24 / 10 nos níveis 1 a 5 (confirmada por script independente em Node a partir do CSV)', async () => {
+    const { body } = await t.api.get('/api/triage/distribution').expect(200);
+    expect(body.map((b: any) => b.count)).toEqual([5, 9, 2, 24, 10]);
+  });
+
   it('AC-40: ABC 80/95 dá A = 24, B = 13, C = 13 (spec 7)', async () => {
     const { body } = await t.api.get('/api/abc/pareto').expect(200);
     const n = (c: string) => body.filter((r: any) => r.class === c).length;
