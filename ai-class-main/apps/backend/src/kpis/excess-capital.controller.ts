@@ -24,6 +24,29 @@ function number(query: Record<string, unknown>, field: string, fallback: number,
   return n;
 }
 
+/** Valor total de stock e artigos acima do máximo no snapshot de referência (partilhado por K7 e antes/depois). */
+export async function loadExcess(pool: Pool, filters: Awaited<ReturnType<typeof resolveFilters>>) {
+  const q = filteredSnapshots(filters);
+  const totals = (await pool.query(
+    `WITH ${q.ctes}
+     SELECT (SELECT count(*)::int FROM no_data) AS without_data,
+            COALESCE(sum(stock_value), 0)::float8 AS total_value
+       FROM ref`,
+    q.params,
+  )).rows[0];
+  const rows = (await pool.query(
+    `WITH ${q.ctes}
+     SELECT t.item_type AS type, r.item_id, r.item_name,
+            (r.current_stock - r.max_capacity) AS excess_units,
+            ((r.current_stock - r.max_capacity) * r.unit_cost)::float8 AS excess_value
+       FROM ref r JOIN dim_item_type t ON t.item_type_id = r.item_type_id
+      WHERE r.current_stock > r.max_capacity
+      ORDER BY excess_value DESC, r.item_id, r.item_name`,
+    q.params,
+  )).rows;
+  return { totals, rows };
+}
+
 @Controller('kpis')
 export class ExcessCapitalController {
   constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
@@ -38,26 +61,7 @@ export class ExcessCapitalController {
     const filters = await resolveFilters(this.pool, query);
     const okPct = number(query, 'okPct', DEFAULT_OK_PCT, { min: 0 });
     const atencaoPct = number(query, 'atencaoPct', DEFAULT_ATENCAO_PCT, { min: okPct });
-    const q = filteredSnapshots(filters);
-
-    const totals = (await this.pool.query(
-      `WITH ${q.ctes}
-       SELECT (SELECT count(*)::int FROM no_data) AS without_data,
-              COALESCE(sum(stock_value), 0)::float8 AS total_value
-         FROM ref`,
-      q.params,
-    )).rows[0];
-
-    const rows = (await this.pool.query(
-      `WITH ${q.ctes}
-       SELECT t.item_type AS type, r.item_id, r.item_name,
-              (r.current_stock - r.max_capacity) AS excess_units,
-              ((r.current_stock - r.max_capacity) * r.unit_cost)::float8 AS excess_value
-         FROM ref r JOIN dim_item_type t ON t.item_type_id = r.item_type_id
-        WHERE r.current_stock > r.max_capacity
-        ORDER BY excess_value DESC, r.item_id, r.item_name`,
-      q.params,
-    )).rows;
+    const { totals, rows } = await loadExcess(this.pool, filters);
 
     const byType = new Map<string, { type: string; valueEur: number; items: unknown[] }>();
     let value = 0;
