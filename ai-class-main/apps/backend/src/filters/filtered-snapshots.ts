@@ -54,7 +54,7 @@ export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredS
       SELECT item_sk, item_id, item_name, value::float8 AS value, pos,
              CASE WHEN total > 0 THEN round(cum_value / total * 100, 2)::float8 ELSE 0 END AS cum_pct,
              round(pos * 100.0 / n, 2)::float8 AS ref_cum_pct,
-             CASE WHEN value <= 0 THEN 'C'
+             CASE WHEN value <= 0 OR total <= 0 THEN 'C'
                   WHEN pos = 1 OR cum_value / total * 100 <= ${cutA}::numeric THEN 'A'
                   WHEN cum_value / total * 100 <= ${cutB}::numeric THEN 'B'
                   ELSE 'C' END AS class

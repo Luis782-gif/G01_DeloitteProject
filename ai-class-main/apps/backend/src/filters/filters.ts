@@ -25,6 +25,9 @@ export interface ResolvedFilters {
 /** Nomes dos parâmetros de query que um endpoint de leitura aceita como filtros. */
 export const FILTER_QUERY_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe'] as const;
 
+/** Maior valor da coluna inteira `item_id` (int4). */
+export const MAX_INT4 = 2_147_483_647;
+
 const bad = (field: string, error: string) => new BadRequestException({ error, field });
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -82,7 +85,9 @@ export async function resolveFilters(pool: Pool, query: Record<string, unknown>)
   if (artigo) {
     const m = artigo.match(/^(\d+):(.+)$/);
     if (!m) throw bad('artigo', `Artigo inválido: "${artigo}" (use item_id:slug, ex.: 108:xray-machine)`);
-    const rows = (await pool.query('SELECT item_sk, item_id, item_name FROM dim_item WHERE item_id = $1', [Number(m[1])])).rows;
+    const id = Number(m[1]);
+    if (!Number.isSafeInteger(id) || id > MAX_INT4) throw bad('artigo', `Artigo desconhecido: "${artigo}"`);
+    const rows = (await pool.query('SELECT item_sk, item_id, item_name FROM dim_item WHERE item_id = $1', [id])).rows;
     const hit = rows.find((r) => itemRef(r.item_id, r.item_name) === artigo);
     if (!hit) throw bad('artigo', `Artigo desconhecido: "${artigo}"`);
     f.itemSk = hit.item_sk;
@@ -117,7 +122,13 @@ export async function resolveFilters(pool: Pool, query: Record<string, unknown>)
   };
   f.cutA = cut('cutA');
   f.cutB = cut('cutB');
-  if (f.cutA >= f.cutB) throw bad('cutB', 'cutB tem de ser maior que cutA');
+  if (f.cutA >= f.cutB) {
+    const sentA = single(query, 'cutA') !== undefined;
+    const sentB = single(query, 'cutB') !== undefined;
+    if (sentA && !sentB) throw bad('cutA', `cutA (${f.cutA}) tem de ser menor que cutB (${f.cutB}, valor por defeito)`);
+    if (sentB && !sentA) throw bad('cutB', `cutB (${f.cutB}) tem de ser maior que cutA (${f.cutA}, valor por defeito)`);
+    throw bad('cutB', `cutB (${f.cutB}) tem de ser maior que cutA (${f.cutA})`);
+  }
 
   return f;
 }

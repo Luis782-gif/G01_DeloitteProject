@@ -9,6 +9,8 @@ export default {
   limitations: [
     'Coincide com a contagem de artigos no estado crítico dos dias de folga.',
     'Artigos sem consumo ficam fora do denominador.',
+    'Artigos com tempo de reposição <= 0 (regra R12, assinalados mas carregados) não têm folga calculável: ficam fora do denominador e são contados em "invalidLeadTime".',
+    'Regra do estado (decisão da spec, "= K6 crítico"): OK se nenhum artigo tem folga < 0; crítico se houver pelo menos um. Não há estado de atenção.',
     'Não é uma rutura observada: é uma previsão.',
   ],
 };

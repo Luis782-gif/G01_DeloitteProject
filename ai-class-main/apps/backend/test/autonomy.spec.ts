@@ -56,13 +56,13 @@ describe('KPI autonomia, dias de folga e rutura prevista', () => {
 
   it('limiares de folga parametrizáveis', async () => {
     t = await createTestApp({ csvDir: fixture('f1') });
-    // folga de 108:gloves = -3,269 e de 107:xray-machine = -15,395: com ok a partir de -20 passam a OK
-    const res = await t.api.get('/api/kpis/slack-days?slackCritical=-5&slackOk=-20').expect(200);
+    // folga de 108:gloves = -3,269 (>= -5: OK) e de 107:xray-machine = -15,395 (entre -20 e -5: atenção)
+    const res = await t.api.get('/api/kpis/slack-days?slackCritical=-20&slackOk=-5').expect(200);
     const by = Object.fromEntries(res.body.items.map((i: { itemRef: string; status: string }) => [i.itemRef, i.status]));
     expect(by['108:gloves']).toBe('ok');
-    expect(by['107:xray-machine']).toBe('ok');
+    expect(by['107:xray-machine']).toBe('atencao');
     expect(by['108:xray-machine']).toBe('critico');
-    expect(res.body.thresholds).toEqual({ ok: -20, critical: -5 });
+    expect(res.body.thresholds).toEqual({ ok: -5, critical: -20 });
     await t.api.get('/api/kpis/slack-days?slackOk=abc').expect(400);
   });
 
