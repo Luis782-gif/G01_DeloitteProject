@@ -1,5 +1,6 @@
 import type { ExplainEntry } from './explain-entry';
 import abc from './entries/abc';
+import calendar from './entries/calendar';
 import autonomy from './entries/autonomy';
 import excessCapital from './entries/excess-capital';
 import idleStock from './entries/idle-stock';
@@ -22,6 +23,7 @@ const ENTRIES: ExplainEntry[] = [
   leadTime,
   vendorRisk,
   promisedVsReal,
+  calendar,
 ];
 
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));
