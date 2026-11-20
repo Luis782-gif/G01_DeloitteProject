@@ -72,7 +72,7 @@ Problemas:
 - **Só 3 linhas.** Cada fornecedor tem um único artigo "fornecido", que não corresponde aos artigos que o inventário lhe atribui (o inventário atribui os 5 nomes a cada um dos 3 fornecedores).
 - **Prazo declarado diverge das datas**: V001 declara 5 e as datas dão 5; V002 declara 30 e as datas dão **44**; V003 declara 15 e as datas dão **20**. Dias de `Next_Delivery_Date − Last_Order_Date`.
 - **Referencial**: todos os `Vendor_ID` do inventário (V001, V002, V003) existem aqui.
-- **Os três fornecedores são indistinguíveis pelo inventário**: `Restock_Lead_Time` médio de 15,6 (V001, desvio 8,5), 14,8 (V002, 8,8) e 14,9 (V003, 8,6) dias. O `Vendor_ID` parece atribuído ao acaso.
+- **Os três fornecedores são indistinguíveis pelo inventário**: `Restock_Lead_Time` médio de 15,55 (V001, desvio populacional 8,44), 14,85 (V002, 8,78) e 14,86 (V003, 8,60) dias (a diferença máxima entre médias é de 0,7 dia). O `Vendor_ID` parece atribuído ao acaso.
 
 ## 4. Ficheiros carregados sem KPI (perfil)
 
@@ -108,6 +108,6 @@ Ordem de aplicação no ETL. Ver o tratamento (rejeitar, assinalar, excluir de u
 | R12 | Assinalar | Stock, custo, consumo ou tempo de reposição fora do domínio | 0 |
 | R13 | Assinalar | `Item_Type` fora da lista | 0 |
 | R20 | Assinalar | `patient_data`: alta anterior à admissão | 195 |
-| R21 | Assinalar | `patient_data`: `Bed_Days` difere mais de 1 dia de (alta − admissão) | 451 (inclui os 195 de R20) |
+| R21 | Assinalar | `patient_data`: `Bed_Days` difere mais de 1 dia de (alta − admissão), comparando com os dias completos decorridos, truncados | 451 (inclui os 195 de R20) |
 | R22 | Assinalar | Lista não decomponível (`Supplies_Used`, `Staff_Needed`) | 0 |
 | R30 | Assinalar | `staff_data`: duração do turno difere de `Hours_Worked` | 459 |

@@ -101,7 +101,7 @@ Regra geral: **nunca apagar em silêncio**. Cada registo problemático é rejeit
 | R12 | Assinalar | Stock < 0, custo ≤ 0, consumo < 0 ou LT ≤ 0 | Excluído dos KPI que usam a coluna inválida |
 | R13 | Assinalar | `item_type` fora da lista (Consumable, Equipment) | Aparece como "Desconhecido" no filtro de tipo |
 | R20 | Assinalar | `patient_stay`: alta anterior à admissão | Sem KPI afetado (ficheiro fora dos KPI) |
-| R21 | Assinalar | `patient_stay`: `bed_days` difere mais de 1 dia de (alta − admissão) | Idem |
+| R21 | Assinalar | `patient_stay`: `bed_days` difere mais de 1 dia de (alta − admissão), em dias completos decorridos (truncados) | Idem |
 | R22 | Assinalar | Célula de lista não decomponível (`Supplies_Used`, `Staff_Needed`) | Não gera linhas na tabela ponte; registo mantido |
 | R30 | Assinalar | `staff_shift`: duração (fim − início, com viragem de dia) difere mais de 0,01 h de `hours_worked` | Sem KPI afetado |
 
@@ -466,7 +466,7 @@ Exemplo do slide 22 com cortes 66 % e 91 % (as quebras da aula): **A = {002, 005
 ## 14. Limitações e fora de âmbito
 
 **Limitações dos dados:** ver secção 4.3 e `docs/data-quality.md`. Em concreto:
-1. **Os 3 fornecedores são indistinguíveis pelo LT do inventário** (médias 14,8 a 15,6 dias; desvio ≈ 8,5). A P5 conclui isso com honestidade. A única diferença é o "prometido vs. real" (3 linhas).
+1. **Os 3 fornecedores são indistinguíveis pelo LT do inventário** (médias de 14,85 a 15,55 dias, diferença máxima de 0,7 dia; desvio populacional de 8,4 a 8,8). A P5 conclui isso com honestidade. A única diferença é o "prometido vs. real" (3 linhas).
 2. **`Unit_Cost` é aleatório por registo.** O ABC, o capital em excesso (236,6 M€) e o valor imobilizado (1 187 M€) refletem o snapshot, não o valor real dos artigos.
 3. **Cerca de 10 observações por artigo.** `σ` do stock de segurança, variabilidade do LT e sazonalidade têm confiança baixa.
 4. Autonomia, calendário de rutura e antes/depois **assumem consumo constante**.
