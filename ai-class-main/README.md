@@ -162,7 +162,7 @@ npm test -w @app/frontend    # só frontend (tsx --test sobre src/**/*.test.ts(x
 
 Os testes de API usam `createTestApp()` (`apps/backend/test/harness/test-app.ts`): cria uma base nova e isolada,
 aplica as migrações, carrega opcionalmente uma pasta de CSV de teste (`fixture('f1')` em `apps/backend/test/fixtures/`)
-e devolve um cliente `supertest` sobre a API real. Ver `apps/backend/test/health.spec.ts`. O `close()` é idempotente e o harness fecha, no fim de cada teste, qualquer app que tenha ficado aberta (sem isso o Jest ficava pendurado no fim da execução).
+e devolve um cliente `supertest` sobre a API real. Ver `apps/backend/test/health.spec.ts`. O `close()` é idempotente e o harness fecha, no fim de cada teste, qualquer app que tenha ficado aberta. Em Windows, `embedded-pg.ts` destrói também os pipes de stdio do processo Postgres ao parar (ficavam abertos e o Jest não terminava).
 `apps/backend/test/real-data.spec.ts` confirma AC-03 e AC-40 com os CSV completos; é ignorado se os CSV não estiverem em `DATA_DIR` ou `data/`. `npm run typecheck` verifica os dois pacotes.
 
 ### Outro PostgreSQL (nativo ou Docker)
