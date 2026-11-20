@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
+import { CrossFilterProvider } from '../filters/CrossFilter';
 import Link from 'next/link';
 import { PAGES } from './pages';
 import { FilterBarSection } from '../filters/FilterBarSection';
 import { QualityFooter } from './quality-footer';
-import { Suspense } from 'react';
 import { DetailPanel } from '../detail/DetailPanel';
 import { ModeToggle } from '../components/ModeToggle';
 import { initModeScript } from '../theme/mode';
@@ -29,7 +29,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ModeToggle />
         </nav>
         <FilterBarSection />
-        <main className="app-main">{children}</main>
+        <Suspense fallback={null}>
+          <CrossFilterProvider>
+            <main className="app-main">{children}</main>
+          </CrossFilterProvider>
+        </Suspense>
         <Suspense fallback={null}>
           <DetailPanel />
         </Suspense>
