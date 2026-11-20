@@ -4,6 +4,7 @@ import { BelowMinimumSection } from '../kpis/BelowMinimumSection';
 import { ExcessCardsSection } from '../kpis/ExcessSections';
 import { LeadTimeSection } from '../kpis/LeadTimeSection';
 import { RotationSection } from '../kpis/RotationSection';
+import { TrendSection } from '../kpis/TrendSection';
 
 /** Os filtros vêm do URL; todos os visuais da página recebem o mesmo estado. */
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -16,6 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       <RotationSection filters={filters} />
       <ExcessCardsSection filters={filters} />
       <LeadTimeSection filters={filters} />
+      <TrendSection filters={filters} />
     </>
   );
 }
