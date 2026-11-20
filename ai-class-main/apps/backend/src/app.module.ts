@@ -8,6 +8,7 @@ import { BelowMinimumController } from './kpis/below-minimum.controller';
 import { DetailController } from './kpis/detail.controller';
 import { ExcessCapitalController } from './kpis/excess-capital.controller';
 import { ExplainController } from './kpis/explain/explain.controller';
+import { InsightsController } from './kpis/insights.controller';
 import { LeadTimeController } from './kpis/lead-time.controller';
 import { RotationController } from './kpis/rotation.controller';
 import { TrendController } from './kpis/trend.controller';
@@ -20,7 +21,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, FilterOptionsController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController],
     };
   }
 }

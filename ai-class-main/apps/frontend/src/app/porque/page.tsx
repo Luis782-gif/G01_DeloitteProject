@@ -1,4 +1,5 @@
 import { parseFilterState } from '../../filters/filters';
+import { InsightSection } from '../../insights/InsightSection';
 import { VendorsSection } from '../../kpis/VendorsSection';
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -6,6 +7,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <h1>Porquê</h1>
+      <InsightSection page="porque" filters={filters} />
       <VendorsSection filters={filters} />
     </>
   );
