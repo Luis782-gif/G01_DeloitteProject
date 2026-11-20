@@ -10,6 +10,9 @@ import shortageRate from './entries/shortage-rate';
 import slackDays from './entries/slack-days';
 import vendorRisk from './entries/vendor-risk';
 import promisedVsReal from './entries/promised-vs-real';
+import triage from './entries/triage';
+import safetyStock from './entries/safety-stock';
+import reorderPoint from './entries/reorder-point';
 
 /** Uma linha por entrada: importar o ficheiro de `entries/` e acrescentá-lo à lista. */
 const ENTRIES: ExplainEntry[] = [
@@ -23,6 +26,9 @@ const ENTRIES: ExplainEntry[] = [
   leadTime,
   vendorRisk,
   promisedVsReal,
+  triage,
+  safetyStock,
+  reorderPoint,
   calendar,
 ];
 

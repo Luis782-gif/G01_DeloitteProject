@@ -29,7 +29,7 @@ export interface FilteredSnapshots {
  * calcula-se sobre `period_all` (período, *antes* de artigo/tipo/fornecedor, spec 7). `triagem` entra aqui depois.
  */
 export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredSnapshots {
-  const [from, to, item, type, vendor, classe, cutA, cutB] = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => `$${firstParam + i}`);
+  const [from, to, item, type, vendor, classe, cutA, cutB, triagem, zA, zB, zC] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => `$${firstParam + i}`);
   const ctes = `
     bounds AS (
       SELECT COALESCE(${from}::date, x.mn) AS from_date, COALESCE(${to}::date, x.mx) AS to_date
@@ -59,6 +59,32 @@ export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredS
                   WHEN cum_value / total * 100 <= ${cutB}::numeric THEN 'B'
                   ELSE 'C' END AS class
         FROM abc_cum),
+    sigma AS (
+      SELECT f.item_sk, stddev_pop(f.avg_usage_per_day)::float8 AS sigma, count(*)::int AS n_obs
+        FROM fact_inventory_snapshot f
+        JOIN dim_date d ON d.date_key = f.date_key
+        CROSS JOIN bounds b
+       WHERE d.date <= b.to_date
+       GROUP BY f.item_sk),
+    triage_calc AS (
+      SELECT t.*, CASE WHEN t.usage = 0 THEN NULL
+                       ELSE ceil(round((COALESCE(s.sigma, 0) * t.z * sqrt(greatest(t.lt, 0)))::numeric, 9))::int END AS ss,
+             s.sigma, COALESCE(s.n_obs, 0) AS n_obs
+        FROM (SELECT r.item_sk, r.current_stock AS stock, r.min_required, r.flag_min_above_max AS r11,
+                     r.avg_usage_per_day AS usage, r.restock_lead_time_days AS lt, a.class,
+                     CASE a.class WHEN 'A' THEN ${zA}::numeric WHEN 'B' THEN ${zB}::numeric ELSE ${zC}::numeric END AS z
+                FROM (SELECT DISTINCT ON (item_sk) * FROM period_all ORDER BY item_sk, date_key DESC) r
+                JOIN abc a ON a.item_sk = r.item_sk) t
+        LEFT JOIN sigma s ON s.item_sk = t.item_sk),
+    triage AS (
+      SELECT c.*, CASE WHEN c.usage = 0 THEN NULL ELSE c.usage * c.lt + c.ss END AS pe,
+             CASE WHEN NOT c.r11 AND c.stock < c.min_required THEN greatest(base.lvl, 4) ELSE base.lvl END AS level
+        FROM triage_calc c
+        CROSS JOIN LATERAL (
+          SELECT CASE WHEN c.usage = 0 THEN 1
+                      ELSE 1 + CASE WHEN c.stock >= c.usage * c.lt + c.ss THEN 0
+                                    WHEN c.stock >= c.usage * c.lt THEN 2 ELSE 3 END
+                             + CASE WHEN c.class = 'A' THEN 1 ELSE 0 END END AS lvl) base),
     period_snaps AS (
       SELECT * FROM period_all
        WHERE (${item}::int IS NULL OR item_sk = ${item}::int)),
@@ -66,7 +92,8 @@ export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredS
       SELECT * FROM period_snaps ps
        WHERE (${type}::smallint IS NULL OR item_type_id = ${type}::smallint)
          AND (${vendor}::text IS NULL OR vendor_id = ${vendor}::text)
-         AND (${classe}::text IS NULL OR ps.item_sk IN (SELECT a.item_sk FROM abc a WHERE a.class = ${classe}::text))),
+         AND (${classe}::text IS NULL OR ps.item_sk IN (SELECT a.item_sk FROM abc a WHERE a.class = ${classe}::text))
+         AND (${triagem}::int[] IS NULL OR ps.item_sk IN (SELECT t.item_sk FROM triage t WHERE t.level = ANY(${triagem}::int[])))),
     ref AS (
       SELECT DISTINCT ON (s.item_sk)
              s.*, s.snap_date AS ref_date, b.to_date AS cutoff_date,
@@ -77,5 +104,5 @@ export function filteredSnapshots(f: ResolvedFilters, firstParam = 1): FilteredS
       SELECT i.item_sk FROM dim_item i
        WHERE (${item}::int IS NULL OR i.item_sk = ${item}::int)
          AND NOT EXISTS (SELECT 1 FROM period_snaps p WHERE p.item_sk = i.item_sk))`;
-  return { ctes, params: [f.from, f.to, f.itemSk, f.itemTypeId, f.vendorId, f.classe, f.cutA, f.cutB] };
+  return { ctes, params: [f.from, f.to, f.itemSk, f.itemTypeId, f.vendorId, f.classe, f.cutA, f.cutB, f.triagem, f.z.A, f.z.B, f.z.C] };
 }

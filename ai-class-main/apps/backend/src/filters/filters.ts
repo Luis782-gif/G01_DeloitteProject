@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Pool } from 'pg';
 import { itemRef } from '../kpis/reference-snapshot';
+import { DEFAULT_SERVICE_LEVELS, zForService, type ServiceLevels } from '../kpis/triage';
 
 /**
  * Filtros globais (spec 8.5 e 11), já validados e resolvidos para chaves da base.
@@ -20,10 +21,16 @@ export interface ResolvedFilters {
   /** Cortes ABC em % do valor acumulado (spec 7): parâmetros `cutA`/`cutB`, por defeito 80/95. */
   cutA: number;
   cutB: number;
+  /** Filtro de nível de triagem (lista de 1 a 5) ou null. */
+  triagem: number[] | null;
+  /** Nível de serviço por classe, em % (95 a 99): parâmetros `servicoA`/`servicoB`/`servicoC`. */
+  service: ServiceLevels;
+  /** Z correspondente a cada nível de serviço. */
+  z: ServiceLevels;
 }
 
 /** Nomes dos parâmetros de query que um endpoint de leitura aceita como filtros. */
-export const FILTER_QUERY_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe'] as const;
+export const FILTER_QUERY_KEYS = ['periodo', 'artigo', 'tipo', 'fornecedor', 'classe', 'triagem'] as const;
 
 /** Maior valor da coluna inteira `item_id` (int4). */
 export const MAX_INT4 = 2_147_483_647;
@@ -76,7 +83,7 @@ function single(query: Record<string, unknown>, field: string): string | undefin
  * Valores inválidos ou inexistentes -> 400 `{ error, field }`.
  */
 export async function resolveFilters(pool: Pool, query: Record<string, unknown>): Promise<ResolvedFilters> {
-  const f: ResolvedFilters = { from: null, to: null, itemSk: null, itemTypeId: null, vendorId: null, classe: null, cutA: 80, cutB: 95 };
+  const f: ResolvedFilters = { from: null, to: null, itemSk: null, itemTypeId: null, vendorId: null, classe: null, cutA: 80, cutB: 95, triagem: null, service: { ...DEFAULT_SERVICE_LEVELS }, z: { A: 0, B: 0, C: 0 } };
 
   const periodo = single(query, 'periodo');
   if (periodo) Object.assign(f, parsePeriod(periodo));
@@ -112,6 +119,23 @@ export async function resolveFilters(pool: Pool, query: Record<string, unknown>)
     if (classe !== 'A' && classe !== 'B' && classe !== 'C') throw bad('classe', `Classe inválida: "${classe}" (use A, B ou C)`);
     f.classe = classe;
   }
+
+  const triagem = single(query, 'triagem');
+  if (triagem) {
+    const levels = triagem.split(',').map((x) => x.trim());
+    if (!levels.every((x) => /^[1-5]$/.test(x))) throw bad('triagem', `Triagem inválida: "${triagem}" (use níveis de 1 a 5, ex.: 4,5)`);
+    f.triagem = [...new Set(levels.map(Number))].sort();
+  }
+
+  for (const cls of ['A', 'B', 'C'] as const) {
+    const field = `servico${cls}`;
+    const v = single(query, field);
+    if (v === undefined) continue;
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 95 || n > 99) throw bad(field, `Nível de serviço inválido: "${v}" (use um número entre 95 e 99)`);
+    f.service[cls] = n;
+  }
+  f.z = { A: zForService(f.service.A), B: zForService(f.service.B), C: zForService(f.service.C) };
 
   const cut = (field: 'cutA' | 'cutB') => {
     const v = single(query, field);
