@@ -58,4 +58,10 @@ describeReal('dados completos (AC-03, AC-40)', () => {
     const n = (c: string) => body.filter((r: any) => r.class === c).length;
     expect([n('A'), n('B'), n('C')]).toEqual([24, 13, 13]);
   });
+
+  it('Receita: 36 de 50 artigos abaixo do PE, 150697 unidades sugeridas (verificado fora da aplicação)', async () => {
+    const { body } = await t.api.get('/api/reorder-suggestions').expect(200);
+    expect(body.totals).toEqual({ items: 36, units: 150697 });
+    expect(body.withoutConsumption).toBe(0);
+  });
 });

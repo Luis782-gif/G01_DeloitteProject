@@ -28,6 +28,7 @@ test('o frontend não acede à base de dados nem lê CSV (só chama a API)', () 
   for (const f of sources) {
     const src = readFileSync(f, 'utf8');
     assert.doesNotMatch(src, /from ['"](pg|node:fs|fs)['"]/, `${f} importa pg/fs`);
-    assert.doesNotMatch(src, /\.csv|DATABASE_URL/, `${f} refere CSV ou DATABASE_URL`);
+    // `export.csv` é o endpoint de descarga da API (Receita), não um ficheiro lido pelo frontend.
+    assert.doesNotMatch(src, /(?<!export)\.csv|DATABASE_URL/,`${f} refere CSV ou DATABASE_URL`);
   }
 });
