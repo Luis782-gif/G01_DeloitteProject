@@ -1,7 +1,8 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { parseFilterState, updateSearch, type FilterKey, type FilterOptions, type FilterState } from './filters';
+import { useRef } from 'react';
+import { parseFilterState, shouldCommitPeriod, updateSearch, type FilterKey, type FilterOptions, type FilterState } from './filters';
 
 const field = { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, color: 'var(--text-muted)' } as const;
 const control = { font: 'inherit', color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 8px' } as const;
@@ -31,6 +32,14 @@ export function FilterBarView({ options, state, onChange }: { options: FilterOpt
       </select>
     </label>
   );
+  // Último período enviado: o URL só reflete o Enter depois da navegação, e o blur seguinte não deve repeti-la.
+  const lastSent = useRef(state.periodo ?? '');
+  lastSent.current = state.periodo ?? '';
+  const commitPeriod = (value: string) => {
+    if (!shouldCommitPeriod(value, state.periodo ?? '', lastSent.current)) return;
+    lastSent.current = value.trim();
+    onChange('periodo', value.trim());
+  };
   return (
     <form
       aria-label="Filtros"
@@ -48,8 +57,8 @@ export function FilterBarView({ options, state, onChange }: { options: FilterOpt
           defaultValue={state.periodo ?? ''}
           placeholder="2025, 2025-Q3, 2025-09 ou 2025-01-01..2025-03-31"
           size={34}
-          onBlur={(e) => e.target.value.trim() !== (state.periodo ?? '') && onChange('periodo', e.target.value.trim())}
-          onKeyDown={(e) => e.key === 'Enter' && onChange('periodo', e.currentTarget.value.trim())}
+          onBlur={(e) => commitPeriod(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && commitPeriod(e.currentTarget.value)}
         />
         <datalist id="periodo-sugestoes">
           {periodSuggestions(options?.dateRange ?? { min: null, max: null }).map((p) => (

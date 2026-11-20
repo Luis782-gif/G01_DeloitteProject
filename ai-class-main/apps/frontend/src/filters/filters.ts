@@ -41,6 +41,15 @@ export function updateSearch(currentSearch: string, key: FilterKey, value: strin
   return [...params.entries()].map(([k, v]) => enc(k, v)).join('&');
 }
 
+/**
+ * Campo de período: Enter e blur podem disparar ambos; só se navega se o valor (sem espaços) difere
+ * do estado do URL e do último valor já enviado (o URL pode ainda não ter refletido o Enter).
+ */
+export function shouldCommitPeriod(inputValue: string, urlValue: string, lastSent: string): boolean {
+  const v = inputValue.trim();
+  return v !== urlValue && v !== lastSent;
+}
+
 /** Cross-filter: aplica `key=value`; se já estava aplicado remove-o. Mesmo estado do URL que os slicers. */
 export function toggleFilter(currentSearch: string, key: FilterKey, value: string): string {
   const current = new URLSearchParams(currentSearch).get(key);
