@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
+import { CrossFilterProvider } from '../filters/CrossFilter';
 import Link from 'next/link';
 import { PAGES } from './pages';
 import { FilterBarSection } from '../filters/FilterBarSection';
@@ -27,7 +28,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ModeToggle />
         </nav>
         <FilterBarSection />
-        <main className="app-main">{children}</main>
+        <Suspense fallback={null}>
+          <CrossFilterProvider>
+            <main className="app-main">{children}</main>
+          </CrossFilterProvider>
+        </Suspense>
         <QualityFooter />
       </body>
     </html>
