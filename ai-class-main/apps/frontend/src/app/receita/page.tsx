@@ -1,3 +1,4 @@
+import { PageTiles } from '../../layout/PageTiles';
 import { parseFilterState } from '../../filters/filters';
 import { InsightSection } from '../../insights/InsightSection';
 import { BeforeAfterSection } from '../../kpis/BeforeAfterSection';
@@ -10,10 +11,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <h1>Receita</h1>
-      <InsightSection page="receita" filters={filters} />
-      <ReorderSection filters={filters} />
-      <BeforeAfterSection filters={filters} />
-      <SimulatorSection filters={filters} />
+      <PageTiles
+        page="receita"
+        nodes={{
+          'insights': <InsightSection page="receita" filters={filters} />,
+          'reposicao': <ReorderSection filters={filters} />,
+          'antes-depois': <BeforeAfterSection filters={filters} />,
+          'simulador': <SimulatorSection filters={filters} />,
+        }}
+      />
     </>
   );
 }
