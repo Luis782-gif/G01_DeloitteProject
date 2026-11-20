@@ -5,6 +5,7 @@ import { PAGES } from './pages';
 import { FilterBarSection } from '../filters/FilterBarSection';
 import { QualityFooter } from './quality-footer';
 import { DetailPanel } from '../detail/DetailPanel';
+import { GlobalSearch } from '../search/GlobalSearch';
 import { ModeToggle } from '../components/ModeToggle';
 import { initModeScript } from '../theme/mode';
 import { EcgSection } from '../ecg/EcgSection';
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Suspense fallback={null}>
             <EcgSection />
           </Suspense>
+          <GlobalSearch />
           <ModeToggle />
         </nav>
         <FilterBarSection />

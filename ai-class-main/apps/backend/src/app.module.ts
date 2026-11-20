@@ -12,6 +12,7 @@ import { InsightsController } from './kpis/insights.controller';
 import { LeadTimeController } from './kpis/lead-time.controller';
 import { RotationController } from './kpis/rotation.controller';
 import { ShortageCalendarController } from './kpis/shortage-calendar.controller';
+import { SearchController } from './kpis/search.controller';
 import { TriageController } from './kpis/triage.controller';
 import { TrendController } from './kpis/trend.controller';
 import { VendorsController } from './kpis/vendors.controller';
@@ -23,7 +24,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController],
     };
   }
 }

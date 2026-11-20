@@ -1,0 +1,13 @@
+Date,Item_ID,Item_Type,Item_Name,Current_Stock,Min_Required,Max_Capacity,Unit_Cost,Avg_Usage_Per_Day,Restock_Lead_Time,Vendor_ID
+2025-11-21,201,Equipment,Widget 1,100,10,500,5.5,10,5,V001
+2025-11-21,202,Equipment,Widget 2,100,10,500,5.5,10,5,V001
+2025-11-21,203,Equipment,Widget 3,100,10,500,5.5,10,5,V001
+2025-11-21,204,Equipment,Widget 4,100,10,500,5.5,10,5,V001
+2025-11-21,205,Equipment,Widget 5,100,10,500,5.5,10,5,V001
+2025-11-21,206,Equipment,Widget 6,100,10,500,5.5,10,5,V001
+2025-11-21,207,Equipment,Widget 7,100,10,500,5.5,10,5,V001
+2025-11-21,208,Equipment,Widget 8,100,10,500,5.5,10,5,V001
+2025-11-21,209,Equipment,Widget 9,100,10,500,5.5,10,5,V001
+2025-11-21,210,Equipment,Widget 10,100,10,500,5.5,10,5,V001
+2025-11-21,211,Equipment,Widget 11,100,10,500,5.5,10,5,V001
+2025-11-21,212,Equipment,Widget 12,100,10,500,5.5,10,5,V001
