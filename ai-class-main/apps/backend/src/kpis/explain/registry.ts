@@ -14,6 +14,7 @@ import triage from './entries/triage';
 import safetyStock from './entries/safety-stock';
 import reorderPoint from './entries/reorder-point';
 import reorderSuggestion from './entries/reorder-suggestion';
+import simulator from './entries/simulator';
 
 /** Uma linha por entrada: importar o ficheiro de `entries/` e acrescentá-lo à lista. */
 const ENTRIES: ExplainEntry[] = [
@@ -31,6 +32,7 @@ const ENTRIES: ExplainEntry[] = [
   safetyStock,
   reorderPoint,
   reorderSuggestion,
+  simulator,
   calendar,
 ];
 
