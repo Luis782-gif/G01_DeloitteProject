@@ -507,3 +507,21 @@ Pontos em que a implementação da onda 1 fixou um detalhe que a spec deixava em
 6. **Cross-filter.** Clicar na barra de excesso aplica o filtro `tipo`; a expansão Tipo → Artigo está no botão da tabela, não na barra.
 7. **Drill-through.** O painel lateral está ligado às tabelas de abaixo-do-mínimo, Pareto e fornecedores (`DetailLink`); a dispersão e a tabela de excesso não abrem o painel.
 8. **Testes com dados reais.** AC-03 e AC-40 correm em `apps/backend/test/real-data.spec.ts` e são ignorados se os CSV (fora do Git) não existirem em `DATA_DIR` ou `data/`.
+
+### Seguimentos conhecidos (code-review da onda 1)
+
+Achados do code-review que **não** foram alterados agora:
+
+- **H. Desempenho.** Cada endpoint repete a cadeia de CTE de `filteredSnapshots` várias vezes por pedido, e o endpoint de insights multiplica isto ao chamar vários KPI. Com ~10 snapshots por artigo não é um problema; fica como otimização futura (materializar a cadeia numa tabela temporária por pedido, ou cache por filtro).
+- **I. Injeção de dependências.** `InsightsController` instancia outros controladores com `new X(pool)` e chama os seus handlers diretamente, fora da injeção do Nest. Funciona e está coberto por testes; refatorar para serviços partilhados é uma mudança estrutural que não cabe numa correção.
+- **J. `Avg_Usage_Per_Day` decimal.** É rejeitado no ETL (R03) por a coluna ser inteira. Não é um defeito: a spec define-o como inteiro e a rejeição fica registada com motivo (nada se perde em silêncio).
+
+Corrigido no mesmo review (A a G):
+
+- **A.** ABC: com total do período <= 0 já não há divisão por zero; todos os artigos ficam em classe C.
+- **B.** `artigo=<id>:slug` com id fora do intervalo inteiro: 400 `{ error, field: 'artigo' }` no filtro e 404 `{ error }` no detalhe.
+- **C.** Folga: registos com tempo de reposição <= 0 (R12) ficam sem folga (como no K3 e no índice de risco), fora da mediana, da rutura prevista e de `pctAtRisk`; contam-se em `invalidLeadTime`.
+- **D.** `slackOk` tem de ser maior que `slackCritical` (400 com `field`). Na rutura prevista mantém-se OK se 0 artigos e crítico se > 0 ("= K6 crítico"), agora dito na entrada "Como é calculado".
+- **E (parcial).** Rotação: um período sem nenhum snapshot nos dados dá 0 dias, rotação nula e `noData: true`. **Não** se corta o período ao intervalo real dos snapshots: a F2 (12.2) exige 90 dias de 2025-Q1 com snapshots só entre 2025-01-04 e 2025-02-18, o que é incompatível com essa interseção. Fica registado na entrada "Como é calculado" que um período muito mais largo do que os dados sobrestima a rotação.
+- **F.** Cortes ABC: o erro indica o parâmetro enviado (`cutA` ou `cutB`) e o valor por defeito do outro.
+- **G.** Campo de período: Enter e blur não disparam duas navegações idênticas (`shouldCommitPeriod`).
