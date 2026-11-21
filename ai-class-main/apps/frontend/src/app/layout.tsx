@@ -1,7 +1,6 @@
 import { Suspense, type ReactNode } from 'react';
 import { CrossFilterProvider } from '../filters/CrossFilter';
-import Link from 'next/link';
-import { PAGES } from './pages';
+import { NavTabs } from './NavTabs';
 import { FilterBarSection } from '../filters/FilterBarSection';
 import { QualityFooter } from './quality-footer';
 import { DetailPanel } from '../detail/DetailPanel';
@@ -14,7 +13,7 @@ import { initModeScript } from '../theme/mode';
 import { EcgSection } from '../ecg/EcgSection';
 import { themeCss } from '../theme/tokens';
 
-export const metadata = { title: 'Stock hospitalar' };
+export const metadata = { title: 'Stock hospitalar', description: 'Dashboard de gestão de stock e prioridades de abastecimento' };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const profile = parseProfile((await cookies()).get(PROFILE_COOKIE)?.value);
@@ -25,21 +24,36 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: initModeScript() }} />
       </head>
       <body>
-        <nav aria-label="Páginas" className="app-nav">
-          {PAGES.map((p) => (
-            <Link key={p.href} href={p.href}>
-              {p.title}
-            </Link>
-          ))}
-          <span className="spacer" />
-          <Suspense fallback={null}>
-            <EcgSection />
-          </Suspense>
-          <GlobalSearch />
-          <ProfileSelect value={profile} />
-          <ModeToggle />
-        </nav>
-        <FilterBarSection />
+        <header className="app-header">
+          <nav aria-label="Páginas" className="app-nav">
+            <a href="/" className="brand" aria-label="Stock hospitalar: início">
+              <span className="brand-mark" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 12h5l3-8 4 16 3-8h5" />
+                </svg>
+              </span>
+              <span>
+                Stock hospitalar
+                <small>Aprovisionamento e logística</small>
+              </span>
+            </a>
+            <Suspense fallback={null}>
+              <NavTabs />
+            </Suspense>
+            <span className="spacer" />
+            <Suspense fallback={null}>
+              <EcgSection />
+            </Suspense>
+            <div className="nav-actions">
+              <GlobalSearch />
+              <ProfileSelect value={profile} />
+              <ModeToggle />
+            </div>
+          </nav>
+          <div className="filter-wrap">
+            <FilterBarSection />
+          </div>
+        </header>
         <Suspense fallback={null}>
           <CrossFilterProvider>
             <main className="app-main">{children}</main>

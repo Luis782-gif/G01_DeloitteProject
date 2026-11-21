@@ -18,7 +18,7 @@ export function BeforeAfterView({ data, error }: { data: BeforeAfter | null; err
         {data.itemsAboveMax} artigo{data.itemsAboveMax === 1 ? '' : 's'} acima do máximo
       </p>
       <BeforeAfterChart data={data} />
-      <table data-testid="before-after-table">
+      <div className="table-scroll"><table data-testid="before-after-table">
         <caption>Valor de stock antes e depois, e capital libertado</caption>
         <thead>
           <tr>
@@ -40,7 +40,7 @@ export function BeforeAfterView({ data, error }: { data: BeforeAfter | null; err
             <td>{fmtEur2(data.released)} ({fmtPct2(data.releasedPct)} %)</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
   );
 }

@@ -40,7 +40,7 @@ export function ExcessBarsView({ data, initialExpanded = null }: { data: ExcessC
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <table>
+      <div className="table-scroll"><table>
         <thead>
           <tr>
             <th scope="col">Tipo / artigo</th>
@@ -70,7 +70,7 @@ export function ExcessBarsView({ data, initialExpanded = null }: { data: ExcessC
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </section>
   );
 }

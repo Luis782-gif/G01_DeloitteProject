@@ -18,7 +18,7 @@ export function SimulatorResultView({ result }: { result: SimulationResult }) {
         Artigos com folga negativa: <strong>{result.negativeSlackBefore}</strong> antes, <strong>{result.negativeSlackAfter}</strong> depois
         ({result.newNegativeSlack} passam a ter folga negativa).
       </p>
-      <table data-testid="simulator-triage">
+      <div className="table-scroll"><table data-testid="simulator-triage">
         <caption>Distribuição dos artigos por nível de triagem, antes e depois</caption>
         <thead>
           <tr>
@@ -43,7 +43,7 @@ export function SimulatorResultView({ result }: { result: SimulationResult }) {
             );
           })}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

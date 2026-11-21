@@ -4,8 +4,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRef } from 'react';
 import { parseFilterState, shouldCommitPeriod, updateSearch, type FilterKey, type FilterOptions, type FilterState } from './filters';
 
-const field = { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, color: 'var(--text-muted)' } as const;
-const control = { font: 'inherit', color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 8px' } as const;
 
 /** Sugestões de período a partir do intervalo de datas disponível (anos e trimestres). */
 export function periodSuggestions(range: FilterOptions['dateRange']): string[] {
@@ -20,9 +18,9 @@ export function periodSuggestions(range: FilterOptions['dateRange']): string[] {
 /** Barra de slicers (apresentação pura): período, artigo, tipo, fornecedor. */
 export function FilterBarView({ options, state, onChange }: { options: FilterOptions | null; state: FilterState; onChange: (key: FilterKey, value: string) => void }) {
   const select = (key: FilterKey, label: string, entries: { value: string; label: string }[]) => (
-    <label style={field}>
+    <label className="filter-field">
       {label}
-      <select style={control} value={state[key] ?? ''} onChange={(e) => onChange(key, e.target.value)}>
+      <select className="filter-control" value={state[key] ?? ''} onChange={(e) => onChange(key, e.target.value)}>
         <option value="">Todos</option>
         {entries.map((e) => (
           <option key={e.value} value={e.value}>
@@ -45,18 +43,19 @@ export function FilterBarView({ options, state, onChange }: { options: FilterOpt
       aria-label="Filtros"
       data-testid="filter-bar"
       onSubmit={(e) => e.preventDefault()}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', padding: '12px 24px', borderBottom: '1px solid var(--border)' }}
+      className="filter-bar"
     >
-      <label style={field}>
+      <label className="filter-field">
         Período
         <input
           key={state.periodo ?? ''}
-          style={control}
+          className="filter-control"
           name="periodo"
           list="periodo-sugestoes"
           defaultValue={state.periodo ?? ''}
-          placeholder="2025, 2025-Q3, 2025-09 ou 2025-01-01..2025-03-31"
-          size={34}
+          placeholder="ex.: 2025-Q3"
+          title="2025, 2025-Q3, 2025-09 ou 2025-01-01..2025-03-31"
+          size={24}
           onBlur={(e) => commitPeriod(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && commitPeriod(e.currentTarget.value)}
         />
@@ -72,7 +71,7 @@ export function FilterBarView({ options, state, onChange }: { options: FilterOpt
       {select('classe', 'Classe ABC', ['A', 'B', 'C'].map((c) => ({ value: c, label: c })))}
       {select('triagem', 'Triagem', ['1', '2', '3', '4', '5', '4,5'].map((n) => ({ value: n, label: n.length > 1 ? 'Níveis 4 e 5' : `Nível ${n}` })))}
       {options?.dateRange.min && (
-        <small style={{ color: 'var(--text-muted)' }}>
+        <small className="filter-range">
           Dados de {options.dateRange.min} a {options.dateRange.max}
         </small>
       )}

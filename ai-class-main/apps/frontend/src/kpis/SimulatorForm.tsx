@@ -63,7 +63,7 @@ export function SimulatorForm({ filters, vendors }: { filters: FilterState; vend
           </select>
         </div>
       )}
-      <button type="submit" disabled={busy}>{busy ? 'A simular…' : 'Simular'}</button>
+      <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'A simular…' : 'Simular'}</button>
       {error && <p role="alert" data-testid="simulator-error">{error}</p>}
       <div aria-live="polite">{result && <SimulatorResultView result={result} />}</div>
     </form>

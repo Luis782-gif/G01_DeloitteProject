@@ -8,34 +8,37 @@ export const MIN_W = 3;
 export const MAX_W = 12;
 export const MAX_H = 8;
 
-/** Mosaicos de cada página pela ordem por defeito (topo / meio / fim da narrativa) com o título usado nos controlos. */
-export const PAGE_TILES: Record<PageId, { id: string; title: string }[]> = {
+/**
+ * Mosaicos de cada página pela ordem por defeito, com a largura por defeito (colunas de 12) e o título usado nos controlos.
+ * A ordem segue a formação de Power BI: topo = frase-insight e KPI, meio = gráficos que explicam, fim = tabelas de detalhe.
+ */
+export const PAGE_TILES: Record<PageId, { id: string; title: string; w: number }[]> = {
   pulso: [
-    { id: 'insights', title: 'Frases-síntese' },
-    { id: 'autonomia', title: 'Autonomia' },
-    { id: 'abaixo-do-minimo', title: 'Abaixo do mínimo' },
-    { id: 'triagem', title: 'Triagem' },
-    { id: 'rotacao', title: 'Rotação' },
-    { id: 'excesso', title: 'Capital em excesso' },
-    { id: 'prazo-entrega', title: 'Prazo de entrega' },
-    { id: 'tendencia', title: 'Tendência' },
+    { id: 'insights', title: 'Frases-síntese', w: 12 },
+    { id: 'kpis', title: 'Indicadores principais', w: 12 },
+    { id: 'tendencia', title: 'Tendência', w: 8 },
+    { id: 'triagem', title: 'Triagem', w: 4 },
+    { id: 'urgentes', title: 'Artigos urgentes', w: 7 },
+    { id: 'abaixo-do-minimo', title: 'Abaixo do mínimo', w: 5 },
+    { id: 'prazo-entrega', title: 'Prazo de entrega', w: 6 },
+    { id: 'rotacao', title: 'Rotação', w: 6 },
   ],
   'onde-doi': [
-    { id: 'insights', title: 'Frases-síntese' },
-    { id: 'dispersao', title: 'Dispersão' },
-    { id: 'pareto-abc', title: 'Pareto ABC' },
-    { id: 'excesso-barras', title: 'Excesso por categoria' },
-    { id: 'calendario', title: 'Calendário de rutura' },
+    { id: 'insights', title: 'Frases-síntese', w: 12 },
+    { id: 'dispersao', title: 'Dispersão', w: 6 },
+    { id: 'excesso-barras', title: 'Excesso por categoria', w: 6 },
+    { id: 'pareto-abc', title: 'Pareto ABC', w: 12 },
+    { id: 'calendario', title: 'Calendário de rutura', w: 12 },
   ],
   porque: [
-    { id: 'insights', title: 'Frases-síntese' },
-    { id: 'fornecedores', title: 'Fornecedores' },
+    { id: 'insights', title: 'Frases-síntese', w: 12 },
+    { id: 'fornecedores', title: 'Fornecedores', w: 12 },
   ],
   receita: [
-    { id: 'insights', title: 'Frases-síntese' },
-    { id: 'reposicao', title: 'Sugestões de reposição' },
-    { id: 'antes-depois', title: 'Antes e depois' },
-    { id: 'simulador', title: 'Simulador "E se…"' },
+    { id: 'insights', title: 'Frases-síntese', w: 12 },
+    { id: 'antes-depois', title: 'Antes e depois', w: 5 },
+    { id: 'simulador', title: 'Simulador "E se…"', w: 7 },
+    { id: 'reposicao', title: 'Sugestões de reposição', w: 12 },
   ],
 };
 
@@ -57,7 +60,7 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, M
 const renumber = (tiles: TileLayout[]): TileLayout[] => tiles.map((t, i) => ({ ...t, position: i + 1 }));
 
 export function defaultLayout(page: PageId): TileLayout[] {
-  return PAGE_TILES[page].map((t, i) => ({ id: t.id, position: i + 1, w: MAX_W, h: 1 }));
+  return PAGE_TILES[page].map((t, i) => ({ id: t.id, position: i + 1, w: t.w, h: 1 }));
 }
 
 /**

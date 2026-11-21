@@ -119,7 +119,7 @@ Passos de ponta a ponta (primeira vez): `npm install --include=dev` (instala tam
 1. **Spec**: `docs/spec.md` (objetivo, KPI, storyboard, contratos, critérios de aceitação AC-xx e conjuntos de teste calculados à mão na secção 12). O vocabulário está em `GLOSSARY.md` e as decisões difíceis de reverter em `docs/adr/` (0001 a 0003). Desvios da implementação: secção 17 da spec.
 2. **Tickets**: GitHub Issues (`gh issue list`), um por fatia vertical, todos filhos da spec (#1). Cada ticket tem critérios de aceitação que citam os AC e os valores de `docs/spec.md`.
 3. **Teste primeiro**: o critério vira um teste com o valor calculado à mão (`apps/backend/test/*.spec.ts` sobre a API real, `apps/frontend/src/**/*.test.ts(x)` para a interface), e só depois se escreve o código.
-4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`.
+4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`; a das ondas 2 e 3 e da revisão do desenho do dashboard, em `docs/verificacao-final.md`.
 
 | Ticket | Critério (spec) | Teste que o prova |
 | --- | --- | --- |

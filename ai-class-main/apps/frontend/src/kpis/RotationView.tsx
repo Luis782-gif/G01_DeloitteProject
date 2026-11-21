@@ -1,3 +1,4 @@
+import { DetailLink } from '../detail/DetailLink';
 import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import type { Rotation } from './rotation';
 
@@ -5,7 +6,7 @@ const fmt = (n: number | null) =>
   n === null ? 'sem dados' : n.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** Cartão K2 (sem alvo, sem estado) e tabela por artigo. `data` nulo = API indisponível. */
-export function RotationView({ data, error }: { data: Rotation | null; error?: string }) {
+export function RotationView({ data, error, showCard = true }: { data: Rotation | null; error?: string; showCard?: boolean }) {
   if (error) {
     return <p role="alert" data-testid="rotation-invalid-filter">Filtro inválido: {error}</p>;
   }
@@ -14,7 +15,11 @@ export function RotationView({ data, error }: { data: Rotation | null; error?: s
   }
   return (
     <section aria-label="Rotação do stock">
-      <KpiCardWithInfo kpiId="rotation" label="Rotação do stock" value={fmt(data.rotation)} unit="× no período" />
+      {showCard ? (
+        <KpiCardWithInfo kpiId="rotation" label="Rotação do stock" value={fmt(data.rotation)} unit="× no período" />
+      ) : (
+        <h2>Rotação por artigo</h2>
+      )}
       <p data-testid="rotation-summary">
         Anualizada: {fmt(data.annualizedRotation)} × por ano · {data.periodDays} dias · aproximação a partir do consumo médio diário
       </p>
@@ -27,7 +32,7 @@ export function RotationView({ data, error }: { data: Rotation | null; error?: s
         </p>
       )}
       {data.items.length > 0 && (
-        <table data-testid="rotation-table">
+        <div className="table-scroll"><table data-testid="rotation-table">
           <thead>
             <tr>
               <th scope="col">Artigo</th>
@@ -40,7 +45,7 @@ export function RotationView({ data, error }: { data: Rotation | null; error?: s
           <tbody>
             {data.items.map((i) => (
               <tr key={i.itemRef}>
-                <td>{i.itemRef}</td>
+                <td><DetailLink kind="artigo" itemRef={i.itemRef} /></td>
                 <td>{fmt(i.estimatedConsumption)}</td>
                 <td>{fmt(i.averageStock)}</td>
                 <td>{fmt(i.rotation)}</td>
@@ -48,7 +53,7 @@ export function RotationView({ data, error }: { data: Rotation | null; error?: s
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </section>
   );

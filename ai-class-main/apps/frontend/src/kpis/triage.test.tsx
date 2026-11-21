@@ -34,6 +34,17 @@ test('a vista mostra a distribuição clicável, o nº em nível 5 e a tabela do
   assert.match(html, /confiança baixa/);
 });
 
+test('part: o gráfico (meio da página) e a tabela (fim) podem ser desenhados em mosaicos separados', () => {
+  const items = { itemsWithoutData: 0, items: [item({ itemRef: '1:a' })] };
+  const chart = renderToStaticMarkup(<TriageView distribution={dist} items={items} part="chart" />);
+  assert.match(chart, /Nível 4: 24/);
+  assert.doesNotMatch(chart, /data-testid="triage-table"/);
+  const table = renderToStaticMarkup(<TriageView distribution={dist} items={items} part="table" />);
+  assert.match(table, /data-testid="triage-table"/);
+  assert.match(table, /1:a/);
+  assert.doesNotMatch(table, /Nível 4: 24/);
+});
+
 test('estados vazio, indisponível e filtro inválido', () => {
   const zero = dist.map((b) => ({ ...b, count: 0 }));
   assert.match(renderToStaticMarkup(<TriageView distribution={zero} items={{ itemsWithoutData: 0, items: [] }} />), /Sem artigos/);

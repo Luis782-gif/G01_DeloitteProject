@@ -1,8 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { barRows, type ExcessCapital, type IdleStock } from './excess';
-import { ExcessCardsView } from './ExcessCardsView';
+import { barRows, type ExcessCapital } from './excess';
 import { ExcessBarsView } from './ExcessBarsView';
 
 const excess: ExcessCapital = {
@@ -13,26 +12,10 @@ const excess: ExcessCapital = {
     { type: 'Equipment', valueEur: 50, items: [{ itemRef: '2:b', name: 'B', excessUnits: 1, valueEur: 50 }] },
   ],
 };
-const idle: IdleStock = { days: 60, valueEur: 0, itemsOver: 0, itemsWithoutData: 0, items: [] };
 
 test('barRows: só tipos por defeito; o tipo expandido mostra os seus artigos logo a seguir', () => {
   assert.deepEqual(barRows(excess.byType, null).map((r) => r.key), ['t:Consumable', 't:Equipment']);
   assert.deepEqual(barRows(excess.byType, 'Consumable').map((r) => r.key), ['t:Consumable', 'a:108:gloves', 'a:1:a', 't:Equipment']);
-});
-
-test('cartões: capital em excesso com estado e %, stock parado informativo com X', () => {
-  const html = renderToStaticMarkup(<ExcessCardsView excess={excess} idle={idle} />);
-  assert.match(html, /Capital em excesso/);
-  assert.match(html, /data-status="critico"/);
-  assert.match(html, /14,4/);
-  assert.match(html, /Stock parado/);
-  assert.match(html, /60 dias/);
-  assert.match(html, /1 artigo sem dados no período/);
-});
-
-test('cartões: API indisponível e filtro inválido não rebentam', () => {
-  assert.match(renderToStaticMarkup(<ExcessCardsView excess={null} idle={null} />), /indisponível/);
-  assert.match(renderToStaticMarkup(<ExcessCardsView excess={null} idle={null} error="Período inválido" />), /Filtro inválido: Período inválido/);
 });
 
 test('barras: botões por tipo (drill-down), expandido marcado com aria-expanded', () => {

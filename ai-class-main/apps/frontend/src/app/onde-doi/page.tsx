@@ -1,3 +1,4 @@
+import { PageHead } from '../PageHead';
 import { PageTiles } from '../../layout/PageTiles';
 import { parseFilterState } from '../../filters/filters';
 import { InsightSection } from '../../insights/InsightSection';
@@ -10,7 +11,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const filters = parseFilterState(await searchParams);
   return (
     <>
-      <h1>Onde dói</h1>
+      <PageHead href="/onde-doi">
+        <h1>Onde dói</h1>
+      </PageHead>
       <PageTiles
         page="onde-doi"
         nodes={{

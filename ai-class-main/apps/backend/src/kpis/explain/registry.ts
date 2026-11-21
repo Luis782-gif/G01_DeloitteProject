@@ -3,6 +3,7 @@ import abc from './entries/abc';
 import beforeAfter from './entries/before-after';
 import calendar from './entries/calendar';
 import autonomy from './entries/autonomy';
+import belowMinimum from './entries/below-minimum';
 import excessCapital from './entries/excess-capital';
 import idleStock from './entries/idle-stock';
 import rotation from './entries/rotation';
@@ -20,6 +21,7 @@ import simulator from './entries/simulator';
 /** Uma linha por entrada: importar o ficheiro de `entries/` e acrescentá-lo à lista. */
 const ENTRIES: ExplainEntry[] = [
   autonomy,
+  belowMinimum,
   slackDays,
   shortageRate,
   abc,

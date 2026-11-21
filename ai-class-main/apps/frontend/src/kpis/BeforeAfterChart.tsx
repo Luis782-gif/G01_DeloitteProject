@@ -10,7 +10,7 @@ export function BeforeAfterChart({ data }: { data: BeforeAfter }) {
     <div style={{ width: '100%', height: 240 }} role="img" aria-label={`Valor de stock antes ${fmtEur2(data.before)} e depois ${fmtEur2(data.after)}`}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 24, right: 16, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--line)" vertical={false} />
           <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
           <YAxis tickFormatter={(v) => `${Math.round(Number(v) / 1e6)} M€`} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
           <Tooltip formatter={(v) => [fmtEur2(Number(v)), 'Valor de stock']} contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }} />

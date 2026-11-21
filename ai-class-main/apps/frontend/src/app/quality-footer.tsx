@@ -22,7 +22,7 @@ const fmtPct = (n: number) => `${n.toLocaleString('pt-PT', { minimumFractionDigi
 export async function QualityFooter() {
   const q = await fetchQuality();
   return (
-    <footer aria-label="Qualidade dos dados" style={{ padding: '12px 24px', borderTop: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-muted)', fontSize: 14 }}>
+    <footer aria-label="Qualidade dos dados" className="app-footer">
       {!q || q.lastRefreshAt === null ? (
         <p data-testid="quality-summary">Qualidade dos dados indisponível: o ETL ainda não foi executado.</p>
       ) : (

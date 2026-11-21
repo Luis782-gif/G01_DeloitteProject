@@ -25,7 +25,7 @@ export function AbcParetoView({ data, error }: { data: ParetoRow[] | null; error
         ))}
       </div>
       <AbcParetoChart rows={data} />
-      <table data-testid="abc-table">
+      <div className="table-scroll"><table data-testid="abc-table">
         <caption>Valor de stock por artigo, por ordem decrescente</caption>
         <thead>
           <tr>
@@ -47,7 +47,7 @@ export function AbcParetoView({ data, error }: { data: ParetoRow[] | null; error
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </section>
   );
 }

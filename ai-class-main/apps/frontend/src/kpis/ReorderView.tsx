@@ -19,14 +19,14 @@ export function ReorderView({ data, error, exportHref }: { data: ReorderSuggesti
       />
       <p data-testid="reorder-caveat">Sugestão heurística, sem quantidade económica de encomenda.</p>
       <p>
-        <a href={exportHref} download data-testid="reorder-export">Exportar lista de compras</a> (CSV, abre no Excel)
+        <a href={exportHref} download data-testid="reorder-export" className="btn-primary">Exportar lista de compras</a> <span>CSV, abre no Excel</span>
       </p>
       {data.withoutConsumption > 0 && (
         <p data-testid="reorder-no-consumption">
           {data.withoutConsumption} artigo(s) sem consumo ficam fora da lista (sem consumo não há ponto de encomenda).
         </p>
       )}
-      <table data-testid="reorder-table">
+      <div className="table-scroll"><table data-testid="reorder-table">
         <caption>Artigos abaixo do ponto de encomenda, do mais ao menos urgente</caption>
         <thead>
           <tr>
@@ -60,7 +60,7 @@ export function ReorderView({ data, error, exportHref }: { data: ReorderSuggesti
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </section>
   );
 }

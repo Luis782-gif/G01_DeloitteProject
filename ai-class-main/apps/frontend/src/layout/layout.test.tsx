@@ -10,12 +10,28 @@ import { TileGridView } from './TileGridView';
 const ids = (t: TileLayout[]) => t.map((x) => x.id);
 const tile = (id: string, position: number, w = 12, h = 1): TileLayout => ({ id, position, w, h });
 
-test('disposição por defeito: ordem da página, largura total, posições 1..n', () => {
+test('disposição por defeito: ordem da página, largura por defeito, posições 1..n', () => {
   const d = defaultLayout('porque');
   assert.deepEqual(ids(d), PAGE_TILES.porque.map((t) => t.id));
   assert.deepEqual(d.map((t) => t.position), [1, 2]);
   assert.ok(d.every((t) => t.w === 12 && t.h === 1));
-  assert.deepEqual(ids(defaultLayout('pulso')), ['insights', 'autonomia', 'abaixo-do-minimo', 'triagem', 'rotacao', 'excesso', 'prazo-entrega', 'tendencia']);
+  assert.deepEqual(ids(defaultLayout('pulso')), ['insights', 'kpis', 'tendencia', 'triagem', 'urgentes', 'abaixo-do-minimo', 'prazo-entrega', 'rotacao']);
+});
+
+test('disposição por defeito segue topo/meio/fim: frase e KPI a toda a largura, depois linhas completas de 12 colunas', () => {
+  for (const page of Object.keys(PAGE_TILES) as (keyof typeof PAGE_TILES)[]) {
+    const d = defaultLayout(page);
+    assert.deepEqual(d.slice(0, 1).map((t) => [t.id, t.w]), [['insights', 12]], page);
+    // Os mosaicos lado a lado fecham sempre uma linha (sem buracos na grelha por defeito).
+    let row = 0;
+    for (const t of d) {
+      row += t.w;
+      assert.ok(row <= 12, `${page}: linha passa de 12 colunas em ${t.id}`);
+      if (row === 12) row = 0;
+    }
+    assert.equal(row, 0, `${page}: última linha incompleta`);
+  }
+  assert.deepEqual(defaultLayout('pulso').map((t) => t.w), [12, 12, 8, 4, 7, 5, 6, 6]);
 });
 
 test('reconciliar: sem layout guardado = por defeito', () => {
