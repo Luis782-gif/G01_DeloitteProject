@@ -7,12 +7,16 @@ const fmt = (n: number | null, digits = 1) =>
 const fmtCv = (n: number | null) => (n === null ? '—' : `${fmt(n * 100)} %`);
 
 /** Cartão K3 (sem alvo, sem estado) e tabela por fornecedor. `data` nulo = API indisponível. */
-export function LeadTimeView({ data, error }: { data: LeadTime | null; error?: string }) {
+export function LeadTimeView({ data, error, showCard = true }: { data: LeadTime | null; error?: string; showCard?: boolean }) {
   if (error) return <p role="alert" data-testid="lead-time-invalid-filter">Filtro inválido: {error}</p>;
   if (!data) return <p data-testid="lead-time-unavailable">Tempo médio de reposição: indisponível (a API não respondeu).</p>;
   return (
     <section aria-label="Tempo médio de reposição">
-      <KpiCardWithInfo kpiId="lead-time" label="Tempo médio de reposição" value={fmt(data.mean)} unit="dias" />
+      {showCard ? (
+        <KpiCardWithInfo kpiId="lead-time" label="Tempo médio de reposição" value={fmt(data.mean)} unit="dias" />
+      ) : (
+        <h2>Tempo de reposição por fornecedor</h2>
+      )}
       <p data-testid="lead-time-summary">
         Desvio-padrão {fmt(data.stdDev)} dias · coeficiente de variação {fmtCv(data.cv)} · {data.observations} observações
       </p>
@@ -22,7 +26,7 @@ export function LeadTimeView({ data, error }: { data: LeadTime | null; error?: s
         </p>
       )}
       {data.byVendor.length > 0 && (
-        <table data-testid="lead-time-vendors">
+        <div className="table-scroll"><table data-testid="lead-time-vendors">
           <thead>
             <tr>
               <th scope="col">Fornecedor</th>
@@ -43,7 +47,7 @@ export function LeadTimeView({ data, error }: { data: LeadTime | null; error?: s
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </section>
   );

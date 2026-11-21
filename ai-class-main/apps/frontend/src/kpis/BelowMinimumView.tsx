@@ -5,7 +5,7 @@ import { belowMinimumStatus, type BelowMinimum } from './below-minimum';
 const fmtPct = (n: number) => n.toLocaleString('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 /** Cartão K5 e tabela de artigos abaixo do mínimo. `data` nulo = API indisponível. */
-export function BelowMinimumView({ data, error }: { data: BelowMinimum | null; error?: string }) {
+export function BelowMinimumView({ data, error, showCard = true }: { data: BelowMinimum | null; error?: string; showCard?: boolean }) {
   if (error) {
     return <p role="alert" data-testid="below-min-invalid-filter">Filtro inválido: {error}</p>;
   }
@@ -14,7 +14,11 @@ export function BelowMinimumView({ data, error }: { data: BelowMinimum | null; e
   }
   return (
     <section aria-label="Artigos abaixo do mínimo">
-      <KpiCard label="Artigos abaixo do mínimo" value={fmtPct(data.pct)} unit="%" status={belowMinimumStatus(data.pct)} />
+      {showCard ? (
+        <KpiCard label="Artigos abaixo do mínimo" value={fmtPct(data.pct)} unit="%" status={belowMinimumStatus(data.pct)} />
+      ) : (
+        <h2>Artigos abaixo do mínimo</h2>
+      )}
       <p data-testid="below-min-summary">
         {data.count} de {data.eligible} artigos elegíveis · {data.excluded} excluído{data.excluded === 1 ? '' : 's'} (mínimo
         superior ao máximo)
@@ -27,7 +31,7 @@ export function BelowMinimumView({ data, error }: { data: BelowMinimum | null; e
       {data.items.length === 0 ? (
         <p>Nenhum artigo abaixo do mínimo.</p>
       ) : (
-        <table data-testid="below-min-table">
+        <div className="table-scroll"><table data-testid="below-min-table">
           <thead>
             <tr>
               <th scope="col">Artigo</th>
@@ -48,7 +52,7 @@ export function BelowMinimumView({ data, error }: { data: BelowMinimum | null; e
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </section>
   );

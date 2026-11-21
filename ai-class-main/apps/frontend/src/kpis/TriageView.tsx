@@ -5,8 +5,13 @@ import { TriageBadge } from './TriageBadge';
 import { TriageChart } from './TriageChart';
 import { countAtLevel, urgentItems, type TriageBucket, type TriageItems } from './triage';
 
-/** Pulso do hospital: distribuição dos níveis de triagem (clicar filtra) e tabela dos artigos de nível 4 e 5. */
-export function TriageView({ distribution, items, error }: { distribution: TriageBucket[] | null; items: TriageItems | null; error?: string }) {
+export type TriagePart = 'all' | 'chart' | 'table';
+
+/**
+ * Pulso do hospital: distribuição dos níveis de triagem (clicar filtra) e tabela dos artigos de nível 4 e 5.
+ * `part` deixa o Pulso pôr a distribuição no meio da página e a tabela no fim (topo/meio/fim).
+ */
+export function TriageView({ distribution, items, error, part = 'all' }: { distribution: TriageBucket[] | null; items: TriageItems | null; error?: string; part?: TriagePart }) {
   if (error) return <p role="alert" data-testid="triage-invalid-filter">Filtro inválido: {error}</p>;
   if (!distribution || !items) return <p data-testid="triage-unavailable">Triagem: indisponível (a API não respondeu).</p>;
   const total = distribution.reduce((s, b) => s + b.count, 0);
@@ -15,17 +20,23 @@ export function TriageView({ distribution, items, error }: { distribution: Triag
   const n5 = countAtLevel(distribution, 5);
   return (
     <section aria-label="Triagem de stock 1 a 5">
-      <h2>Triagem de stock (1 a 5)</h2>
-      <KpiCardWithInfo kpiId="triage" label="Artigos em nível 5" value={String(n5)} unit={`de ${total}`} status={n5 === 0 ? 'ok' : 'critico'} />
-      <div role="group" aria-label="Filtrar por nível de triagem" data-testid="triage-filter" style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
-        {distribution.map((b) => (
-          <FilterToggle key={b.level} filterKey="triagem" value={String(b.level)}>
-            {`Nível ${b.level}: ${b.count}`}
-          </FilterToggle>
-        ))}
-      </div>
-      <TriageChart distribution={distribution} />
-      <table data-testid="triage-table">
+      {part !== 'table' && (
+        <>
+        <h2>Triagem de stock (1 a 5)</h2>
+        <KpiCardWithInfo kpiId="triage" label="Artigos em nível 5" value={String(n5)} unit={`de ${total}`} status={n5 === 0 ? 'ok' : 'critico'} />
+        <div role="group" aria-label="Filtrar por nível de triagem" data-testid="triage-filter" className="chip-row">
+          {distribution.map((b) => (
+            <FilterToggle key={b.level} filterKey="triagem" value={String(b.level)}>
+              {`Nível ${b.level}: ${b.count}`}
+            </FilterToggle>
+          ))}
+        </div>
+        <TriageChart distribution={distribution} />
+        </>
+      )}
+      {part === 'table' && <h2>Artigos a tratar primeiro (níveis 4 e 5)</h2>}
+      {part !== 'chart' && (
+      <div className="table-scroll"><table data-testid="triage-table">
         <caption>Artigos em nível 4 e 5, do mais ao menos urgente</caption>
         <thead>
           <tr>
@@ -57,7 +68,8 @@ export function TriageView({ distribution, items, error }: { distribution: Triag
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
+      )}
     </section>
   );
 }

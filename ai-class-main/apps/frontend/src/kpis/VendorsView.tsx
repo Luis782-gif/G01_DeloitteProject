@@ -1,7 +1,7 @@
 import { KpiCardWithInfo } from '../explain/KpiCardWithInfo';
 import { filtersToSearch, type FilterState } from '../filters/filters';
 import { LeadTimeIntervalChart, SeasonalityChart } from './VendorCharts';
-import { MONTHS, type Vendors } from './vendors';
+import { MONTHS, vendorSummary, type Vendors } from './vendors';
 
 const fmt = (n: number | null, digits = 1) =>
   n === null ? '—' : n.toLocaleString('pt-PT', { minimumFractionDigits: digits, maximumFractionDigits: digits });
@@ -15,14 +15,45 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
   if (error) return <p role="alert" data-testid="vendors-invalid-filter">Filtro inválido: {error}</p>;
   if (!data) return <p data-testid="vendors-unavailable">Fornecedores: indisponível (a API não respondeu).</p>;
   const { vendors } = data;
+  const s = vendorSummary(vendors);
   return (
     <>
-      <p data-testid="vendors-honesty" role="note">{data.distinguishText}</p>
+      <div className="kpi-row" data-testid="vendors-kpis">
+        <KpiCardWithInfo
+          kpiId="lead-time"
+          label="Diferença entre fornecedores"
+          value={fmt(data.maxDifferenceDays)}
+          unit="dias"
+          hint={`Maior − menor tempo médio de reposição (limiar: ${fmt(data.distinguishDays, 0)} dia)`}
+        />
+        <KpiCardWithInfo
+          kpiId="promised-vs-real"
+          label="Maior atraso face ao prometido"
+          value={s.worstGap ? `+${s.worstGap.gap}` : '—'}
+          unit="dias"
+          hint={s.worstGap ? `${s.worstGap.vendorId}: ${s.worstGap.declared} declarados, ${s.worstGap.real} pelas datas` : 'Sem prazo declarado e datas'}
+        />
+        <KpiCardWithInfo
+          kpiId="vendor-risk"
+          label="Fornecedor de maior risco"
+          value={s.riskiest ? s.riskiest.vendorId : '—'}
+          hint={s.riskiest?.risk ? `Índice ${fmt(s.riskiest.risk.index, 2)} (1 = melhor, 3 = pior)` : 'Sem índice calculado'}
+        />
+        <KpiCardWithInfo
+          kpiId="shortage-rate"
+          label="Artigos em risco (pior fornecedor)"
+          value={s.mostAtRisk ? fmt(s.mostAtRisk.pctAtRisk) : '—'}
+          unit="%"
+          hint={s.mostAtRisk ? `${s.mostAtRisk.vendorId}: ${s.mostAtRisk.itemsAtRisk} artigos com folga negativa` : 'Sem artigos'}
+        />
+      </div>
 
+      <div className="split-2">
       <section aria-label="Tempo de reposição por fornecedor">
         <h2>Tempo de reposição por fornecedor (média ± desvio-padrão)</h2>
+        <p data-testid="vendors-honesty" role="note">{data.distinguishText}</p>
         <LeadTimeIntervalChart vendors={vendors} />
-        <table data-testid="vendors-lead-time">
+        <div className="table-scroll"><table data-testid="vendors-lead-time">
           <thead>
             <tr>
               <th scope="col">Fornecedor</th>
@@ -47,12 +78,14 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
 
+      <div>
       <section aria-label="Prometido vs. real">
-        <KpiCardWithInfo kpiId="promised-vs-real" label="Prometido vs. real" value={`${vendors.length}`} unit="fornecedores" />
-        <table data-testid="promised-vs-real-table">
+        <h2>Prometido vs. real</h2>
+        <p>Prazo declarado no contrato contra o prazo dado pelas datas de encomenda e entrega.</p>
+        <div className="table-scroll"><table data-testid="promised-vs-real-table">
           <thead>
             <tr>
               <th scope="col">Fornecedor</th>
@@ -71,12 +104,13 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
 
       <section aria-label="Índice de risco do fornecedor">
-        <KpiCardWithInfo kpiId="vendor-risk" label="Índice de risco do fornecedor" value="1 a 3" unit="menor = melhor" />
-        <table data-testid="vendor-risk-table">
+        <h2>Índice de risco do fornecedor</h2>
+        <p>Média dos ranks (1 = melhor, 3 = pior) do tempo médio, da variabilidade (CV) e da % de artigos em risco.</p>
+        <div className="table-scroll"><table data-testid="vendor-risk-table">
           <thead>
             <tr>
               <th scope="col">Fornecedor</th>
@@ -97,8 +131,10 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
+      </div>
+      </div>
 
       <section aria-label="Sazonalidade mensal do tempo de reposição">
         <h2>Sazonalidade mensal do tempo de reposição</h2>
@@ -106,7 +142,7 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
           Atenção: cerca de 10 observações por artigo (base fraca). Padrões mensais devem ler-se com cautela.
         </p>
         {data.seasonality.length > 0 && <SeasonalityChart data={data.seasonality} />}
-        <table data-testid="seasonality-table">
+        <div className="table-scroll"><table data-testid="seasonality-table">
           <thead>
             <tr>
               <th scope="col">Mês</th>
@@ -123,7 +159,7 @@ export function VendorsView({ data, filters, error }: { data: Vendors | null; fi
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
     </>
   );

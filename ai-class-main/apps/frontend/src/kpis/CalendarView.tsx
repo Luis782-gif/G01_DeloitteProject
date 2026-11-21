@@ -28,14 +28,15 @@ export function CalendarView({ data }: { data: ShortageCalendar }) {
         {data.cutoffDate && ` Data de corte: ${fmtDate(data.cutoffDate)}.`}
       </p>
       {items.length === 0 && <p>Nenhum artigo com consumo no período.</p>}
+      <div className="cal-months">
       {grids.map((g) => (
-        <div key={g.key} data-testid="calendar-month">
+        <div key={g.key} data-testid="calendar-month" className="cal-month">
           <h3>
             {g.label} ({g.total} artigo{g.total === 1 ? '' : 's'})
           </h3>
-          <div role="grid" aria-label={`Rutura prevista em ${g.label}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(4.5rem, 1fr))', gap: 4 }}>
+          <div role="grid" aria-label={`Rutura prevista em ${g.label}`} className="cal-grid">
             {WEEKDAYS.map((w) => (
-              <div key={w} role="columnheader" style={{ fontWeight: 600 }}>
+              <div key={w} role="columnheader" className="cal-wd">
                 {w}
               </div>
             ))}
@@ -47,15 +48,16 @@ export function CalendarView({ data }: { data: ShortageCalendar }) {
                   key={c.date}
                   role="gridcell"
                   data-testid={c.items.length ? 'calendar-day-hit' : undefined}
-                  style={{ border: c.items.length ? '2px solid currentColor' : '1px solid #8884', borderRadius: 4, padding: 4, minHeight: '3rem' }}
+                  className={c.items.length ? 'cal-cell cal-hit' : 'cal-cell'}
+                  data-count={Math.min(c.items.length, 3)}
                 >
-                  <div>{c.day}</div>
+                  <div className="cal-day">{c.day}</div>
                   {c.items.length > 0 && (
                     <div>
-                      <strong>
+                      <strong className="visually-hidden">
                         {c.items.length} esgota{c.items.length === 1 ? '' : 'm'}
                       </strong>
-                      <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                      <ul className="cal-items">
                         {c.items.map((i) => (
                           <li key={i.itemRef}>
                             <DetailLink kind="artigo" itemRef={i.itemRef}>
@@ -72,8 +74,9 @@ export function CalendarView({ data }: { data: ShortageCalendar }) {
           </div>
         </div>
       ))}
+      </div>
       <h3>Lista por data de esgotamento</h3>
-      <table data-testid="calendar-table">
+      <div className="table-scroll"><table data-testid="calendar-table">
         <caption>Data prevista de esgotamento por artigo (assume consumo constante)</caption>
         <thead>
           <tr>
@@ -100,7 +103,7 @@ export function CalendarView({ data }: { data: ShortageCalendar }) {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       {noConsumption.length > 0 && (
         <div data-testid="calendar-no-consumption">
           <h3>Sem consumo ({noConsumption.length})</h3>

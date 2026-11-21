@@ -1,7 +1,9 @@
 import type { ExplainEntry } from './explain-entry';
 import abc from './entries/abc';
+import beforeAfter from './entries/before-after';
 import calendar from './entries/calendar';
 import autonomy from './entries/autonomy';
+import belowMinimum from './entries/below-minimum';
 import excessCapital from './entries/excess-capital';
 import idleStock from './entries/idle-stock';
 import rotation from './entries/rotation';
@@ -13,10 +15,13 @@ import promisedVsReal from './entries/promised-vs-real';
 import triage from './entries/triage';
 import safetyStock from './entries/safety-stock';
 import reorderPoint from './entries/reorder-point';
+import reorderSuggestion from './entries/reorder-suggestion';
+import simulator from './entries/simulator';
 
 /** Uma linha por entrada: importar o ficheiro de `entries/` e acrescentá-lo à lista. */
 const ENTRIES: ExplainEntry[] = [
   autonomy,
+  belowMinimum,
   slackDays,
   shortageRate,
   abc,
@@ -29,7 +34,10 @@ const ENTRIES: ExplainEntry[] = [
   triage,
   safetyStock,
   reorderPoint,
+  reorderSuggestion,
+  simulator,
   calendar,
+  beforeAfter,
 ];
 
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));

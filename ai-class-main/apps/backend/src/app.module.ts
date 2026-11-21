@@ -4,6 +4,7 @@ import { FilterOptionsController } from './filters/filter-options.controller';
 import { HealthController } from './health.controller';
 import { AbcController } from './kpis/abc.controller';
 import { AutonomyController } from './kpis/autonomy.controller';
+import { BeforeAfterController } from './kpis/before-after.controller';
 import { BelowMinimumController } from './kpis/below-minimum.controller';
 import { DetailController } from './kpis/detail.controller';
 import { ExcessCapitalController } from './kpis/excess-capital.controller';
@@ -12,9 +13,13 @@ import { InsightsController } from './kpis/insights.controller';
 import { LeadTimeController } from './kpis/lead-time.controller';
 import { RotationController } from './kpis/rotation.controller';
 import { ShortageCalendarController } from './kpis/shortage-calendar.controller';
+import { SearchController } from './kpis/search.controller';
 import { TriageController } from './kpis/triage.controller';
+import { SimulationsController } from './kpis/simulations.controller';
+import { ReorderSuggestionsController } from './kpis/reorder-suggestions.controller';
 import { TrendController } from './kpis/trend.controller';
 import { VendorsController } from './kpis/vendors.controller';
+import { LayoutsController } from './layouts/layouts.controller';
 import { MetaController } from './meta.controller';
 
 @Module({})
@@ -23,7 +28,7 @@ export class AppModule {
     return {
       module: AppModule,
       imports: [DatabaseModule.forRoot(databaseUrl)],
-      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController],
+      controllers: [HealthController, MetaController, BelowMinimumController, AbcController, AutonomyController, ExcessCapitalController, ExplainController, RotationController, DetailController, LeadTimeController, TrendController, VendorsController, InsightsController, FilterOptionsController, ShortageCalendarController, TriageController, SearchController, ReorderSuggestionsController, BeforeAfterController, SimulationsController, LayoutsController],
     };
   }
 }

@@ -17,3 +17,10 @@ test('filtro inválido (400 da API): mostra a mensagem em vez de "indisponível"
   const html = renderToStaticMarkup(<BelowMinimumView data={null} error="Período inválido" />);
   assert.match(html, /Filtro inválido: Período inválido/);
 });
+
+test('showCard=false (Pulso: o cartão está na faixa de KPI): título em vez do cartão, resumo e lista mantêm-se', () => {
+  const html = renderToStaticMarkup(<BelowMinimumView data={data} showCard={false} />);
+  assert.doesNotMatch(html, /class="kpi-card"/);
+  assert.match(html, /<h2>Artigos abaixo do mínimo<\/h2>/);
+  assert.match(html, /2 de 4 artigos elegíveis/);
+});

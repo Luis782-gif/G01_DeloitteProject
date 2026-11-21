@@ -119,7 +119,7 @@ Passos de ponta a ponta (primeira vez): `npm install --include=dev` (instala tam
 1. **Spec**: `docs/spec.md` (objetivo, KPI, storyboard, contratos, critérios de aceitação AC-xx e conjuntos de teste calculados à mão na secção 12). O vocabulário está em `GLOSSARY.md` e as decisões difíceis de reverter em `docs/adr/` (0001 a 0003). Desvios da implementação: secção 17 da spec.
 2. **Tickets**: GitHub Issues (`gh issue list`), um por fatia vertical, todos filhos da spec (#1). Cada ticket tem critérios de aceitação que citam os AC e os valores de `docs/spec.md`.
 3. **Teste primeiro**: o critério vira um teste com o valor calculado à mão (`apps/backend/test/*.spec.ts` sobre a API real, `apps/frontend/src/**/*.test.ts(x)` para a interface), e só depois se escreve o código.
-4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`.
+4. **Ligação ticket → teste**: o nome do teste cita o conjunto da spec (por exemplo "F1 (spec 12.1)") ou o AC. A verificação da onda 1, AC a AC, está em `docs/verificacao-onda-1.md`; a das ondas 2 e 3 e da revisão do desenho do dashboard, em `docs/verificacao-final.md`.
 
 | Ticket | Critério (spec) | Teste que o prova |
 | --- | --- | --- |
@@ -182,8 +182,22 @@ e `DATABASE_URL=postgres://postgres:postgres@localhost:5432/stock`. Os testes co
 2. No frontend, trocar `<KpiCard .../>` por `<KpiCardWithInfo kpiId="<id>" label=... value=... status=... />` (`src/explain/KpiCardWithInfo.tsx`); o botão (i) abre `ExplainPanel`, que vai buscar a entrada à API.
 3. Gráficos: `recharts` em componentes `'use client'` (ADR 0003); a página "Onde dói" tem a dispersão autonomia × tempo de reposição como exemplo (`src/kpis/AutonomyScatter.tsx`).
 
+### Receita: antes vs. depois do capital imobilizado
+
+`GET /api/impact/before-after` (filtros comuns) devolve `{ before, after, released, releasedPct, itemsAboveMax }`. Regra explícita (spec 8.4): suspendendo as encomendas dos artigos acima do máximo até o stock voltar ao máximo, liberta-se o capital em excesso K7; `before` = valor de stock total, `after = before - released`. Não prevê consumo nem preços e os € refletem custos unitários irrealistas. Reutiliza `loadExcess` de `excess-capital.controller.ts`; bloco `kpis/BeforeAfterSection.tsx`, entrada `before-after` em "Como é calculado".
+
+### Receita: sugestão de encomenda e CSV
+
+`GET /api/reorder-suggestions` (filtros comuns) lista os artigos com stock < ponto de encomenda, por nível de triagem decrescente e depois folga (stock - PE) crescente; artigos sem consumo não têm PE e só contam em `withoutConsumption`. Quantidade sugerida (**heurística, sem QEE**): `max_capacity - stock`; se o máximo for inconsistente (R11) ou inferior ao PE, `PE - stock` (dito no motivo). `GET /api/reorder-suggestions/export.csv` devolve a mesma lista em UTF-8 com BOM, separador `;`. A página Receita compõe-se de secções independentes (`kpis/ReorderSection.tsx` é a primeira; cada bloco novo é um `<XSection filters={filters} />` em `app/receita/page.tsx`).
+
 ### Drill-through (painel lateral)
 
 O estado fica no URL: `?detalhe=artigo:108:xray-machine` ou `?detalhe=fornecedor:V002`, combinável com os filtros globais; recarregar reabre o painel e fechá-lo (Esc ou "Fechar") remove só `detalhe`.
 Helper em `apps/frontend/src/detail/detail.ts`: `detailHref(paramsAtuais, 'artigo' | 'fornecedor', ref)` devolve o href relativo (`?...&detalhe=...`); `<DetailLink kind itemRef />` (client) usa-o com os filtros do URL atual; `closeDetailHref` fecha.
 API: `GET /api/items/:itemRef` e `GET /api/vendors/:vendorId` (404 `{ error }` se não existir; aceitam `periodo`/`tipo`/`classe`); o painel (`DetailPanel`) está montado no layout.
+
+### Layouts por perfil (Editar disposição)
+
+**Não há autenticação.** O perfil (Diretor, Gestor de armazém, Comprador; ids `diretor`, `gestor-armazem`, `comprador`) é só uma escolha no seletor do cabeçalho, guardada no cookie `perfil` (por defeito: Diretor) para o servidor desenhar o layout certo no SSR. Qualquer cliente pode ler, escrever e apagar o layout de qualquer perfil.
+API: `GET/PUT/DELETE /api/layouts/:profile` (corpo `{ layout }`; 404 sem layout, 400 `{ error, field }` se o perfil ou a forma forem inválidos, máx. 16 KiB e 30 mosaicos por página; DELETE é idempotente, 204). Tabela `dashboard_layout`, fora do esquema em estrela (o ETL não lhe toca).
+Frontend (`apps/frontend/src/layout/`): cada bloco de página é um mosaico com id estável (`PAGE_TILES` em `model.ts`). Para acrescentar um bloco: acrescentar `{ id, title }` a `PAGE_TILES[página]` e uma entrada em `nodes` do `<PageTiles>` da página. Layouts guardados antigos continuam a funcionar: ids desconhecidos são ignorados e mosaicos novos vão para o fim, com o tamanho por defeito (`reconcile`). Em "Editar disposição" arrasta-se (rato) ou usam-se os botões Subir/Descer e +/− Largura/Altura (teclado, com anúncio em região `aria-live`); Guardar faz PUT, "Repor por defeito" faz DELETE. Escolha da biblioteca: `docs/adr/0004-layout-de-mosaicos.md`.

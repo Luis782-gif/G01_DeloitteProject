@@ -113,7 +113,8 @@ describe('GET /api/kpis/:id/explain', () => {
   let t: TestApp;
   afterEach(async () => t?.close());
 
-  it.each(['autonomy', 'slack-days', 'shortage-rate'])('devolve a entrada %s com todos os campos', async (id) => {
+  // Todos os KPI com botão (i) na faixa do Pulso e na página Porquê.
+  it.each(['autonomy', 'slack-days', 'shortage-rate', 'below-minimum', 'excess-capital', 'abc', 'rotation', 'lead-time', 'vendor-risk', 'promised-vs-real'])('devolve a entrada %s com todos os campos', async (id) => {
     t = await createTestApp();
     const res = await t.api.get(`/api/kpis/${id}/explain`).expect(200);
     expect(res.body.id).toBe(id);

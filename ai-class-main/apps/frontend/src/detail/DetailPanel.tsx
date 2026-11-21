@@ -38,7 +38,7 @@ export type Detail = { kind: 'artigo'; data: ItemDetail } | { kind: 'fornecedor'
 const fmt = (n: number | null, digits = 2) => (n === null ? 'n/d' : n.toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: digits }));
 
 const panelStyle = {
-  position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(480px, 100vw)', overflowY: 'auto', zIndex: 20, padding: 16,
+  position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(560px, 100vw)', overflowY: 'auto', zIndex: 30, padding: 20,
   background: 'var(--surface)', color: 'var(--text)', borderLeft: '1px solid var(--border)', boxShadow: '-4px 0 12px rgba(0,0,0,.2)',
 } as const;
 
@@ -63,7 +63,7 @@ function ItemBody({ d }: { d: ItemDetail }) {
         )}
       </dl>
       {d.history.length > 0 && (
-        <table data-testid="detail-history">
+        <div className="table-scroll"><table data-testid="detail-history">
           <caption>Histórico de snapshots</caption>
           <thead>
             <tr>
@@ -89,7 +89,7 @@ function ItemBody({ d }: { d: ItemDetail }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </>
   );

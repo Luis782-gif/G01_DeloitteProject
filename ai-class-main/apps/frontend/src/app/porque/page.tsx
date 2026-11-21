@@ -1,3 +1,5 @@
+import { PageHead } from '../PageHead';
+import { PageTiles } from '../../layout/PageTiles';
 import { parseFilterState } from '../../filters/filters';
 import { InsightSection } from '../../insights/InsightSection';
 import { VendorsSection } from '../../kpis/VendorsSection';
@@ -6,9 +8,16 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const filters = parseFilterState(await searchParams);
   return (
     <>
-      <h1>Porquê</h1>
-      <InsightSection page="porque" filters={filters} />
-      <VendorsSection filters={filters} />
+      <PageHead href="/porque">
+        <h1>Porquê</h1>
+      </PageHead>
+      <PageTiles
+        page="porque"
+        nodes={{
+          'insights': <InsightSection page="porque" filters={filters} />,
+          'fornecedores': <VendorsSection filters={filters} />,
+        }}
+      />
     </>
   );
 }

@@ -9,10 +9,10 @@ import type { TriageBucket } from './triage';
 export function TriageChart({ distribution }: { distribution: TriageBucket[] }) {
   const { state, toggle } = useCrossFilter();
   return (
-    <div style={{ width: '100%', height: 220 }} role="img" aria-label="Distribuição dos artigos por nível de triagem, de 1 a 5">
+    <div style={{ width: '100%', height: 240 }} role="img" aria-label="Distribuição dos artigos por nível de triagem, de 1 a 5">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={distribution} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+        <BarChart data={distribution} margin={{ top: 22, right: 16, bottom: 8, left: 8 }}>
+          <CartesianGrid stroke="var(--line)" vertical={false} />
           <XAxis dataKey="level" tickFormatter={(l) => `Nível ${l}`} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
           <YAxis allowDecimals={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
           <Tooltip formatter={(v) => [`${v} artigos`, 'Artigos']} contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }} />

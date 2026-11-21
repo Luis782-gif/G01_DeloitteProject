@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { VendorsView } from './VendorsView';
-import type { Vendors } from './vendors';
+import { vendorSummary, type Vendors } from './vendors';
 
 const vendor = (id: string, over: object) => ({
   vendorId: id, vendorName: id, mean: 15, stdDev: 8, cv: 0.53, observations: 100, items: 10, itemsAtRisk: 2, pctAtRisk: 20,
@@ -31,4 +31,21 @@ test('ressalva de base fraca na sazonalidade e links de drill-through com filtro
 
 test('API indisponível: mensagem', () => {
   assert.match(renderToStaticMarkup(<VendorsView data={null} filters={{}} />), /indisponível/);
+});
+
+test('topo da página: maior atraso face ao prometido (V002: 44 − 30 = +14), pior índice e mais artigos em risco', () => {
+  const v = [
+    vendor('V001', { pctAtRisk: 73.3, itemsAtRisk: 11, items: 15, risk: { ranks: { mean: 3, cv: 1, atRisk: 3 }, index: 2.33 } }),
+    vendor('V002', { declaredDays: 30, datesDays: 44, risk: { ranks: { mean: 1, cv: 3, atRisk: 1 }, index: 1.67 } }),
+    vendor('V003', { declaredDays: 15, datesDays: 20 }),
+  ];
+  const s = vendorSummary(v);
+  assert.deepEqual(s.worstGap, { vendorId: 'V002', declared: 30, real: 44, gap: 14 });
+  assert.equal(s.riskiest?.vendorId, 'V001');
+  assert.equal(s.mostAtRisk?.vendorId, 'V001');
+  const html = renderToStaticMarkup(<VendorsView data={{ ...data, vendors: v }} filters={{}} />);
+  assert.match(html, /\+14/);
+  assert.match(html, /V002: 30 declarados, 44 pelas datas/);
+  assert.match(html, /Índice 2,33/);
+  assert.match(html, /V001: 11 artigos com folga negativa/);
 });

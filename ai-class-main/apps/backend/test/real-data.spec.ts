@@ -42,6 +42,11 @@ describeReal('dados completos (AC-03, AC-40)', () => {
     expect(body.pct).toBeCloseTo(19.9, 1);
   });
 
+  it('antes vs. depois: antes 1 187 053 872,67, libertado 236 614 283,06 (19,93 %), depois 950 439 589,61, 19 artigos', async () => {
+    const { body } = await t.api.get('/api/impact/before-after').expect(200);
+    expect(body).toEqual({ before: 1187053872.67, after: 950439589.61, released: 236614283.06, releasedPct: 19.93, itemsAboveMax: 19 });
+  });
+
   it('AC-40: 6 artigos com autonomia > 60 dias e stock parado de 112 653 424 €', async () => {
     const { body } = await t.api.get('/api/kpis/idle-stock').expect(200);
     expect(body.itemsOver).toBe(6);
@@ -57,5 +62,11 @@ describeReal('dados completos (AC-03, AC-40)', () => {
     const { body } = await t.api.get('/api/abc/pareto').expect(200);
     const n = (c: string) => body.filter((r: any) => r.class === c).length;
     expect([n('A'), n('B'), n('C')]).toEqual([24, 13, 13]);
+  });
+
+  it('Receita: 36 de 50 artigos abaixo do PE, 150697 unidades sugeridas (verificado fora da aplicação)', async () => {
+    const { body } = await t.api.get('/api/reorder-suggestions').expect(200);
+    expect(body.totals).toEqual({ items: 36, units: 150697 });
+    expect(body.withoutConsumption).toBe(0);
   });
 });

@@ -32,3 +32,65 @@ function normInv(p: number): number {
 export function zForService(percent: number): number {
   return KNOWN_Z[percent] ?? Math.round(normInv(percent / 100) * 100) / 100;
 }
+
+/** Entrada da regra de triagem para um artigo no snapshot de referência. */
+export interface TriageInput {
+  stock: number;
+  usage: number;
+  /** Tempo de reposição (dias). */
+  lt: number;
+  /** Desvio-padrão do consumo diário (null = sem histórico). */
+  sigma: number | null;
+  /** Z da classe ABC do artigo. */
+  z: number;
+  class: 'A' | 'B' | 'C';
+  minRequired: number;
+  /** R11: mínimo > máximo (a regra do mínimo não se aplica). */
+  minAboveMax: boolean;
+}
+
+export interface TriageOutcome {
+  /** Stock de segurança (null sem consumo). */
+  ss: number | null;
+  /** Ponto de encomenda (null sem consumo). */
+  pe: number | null;
+  level: 1 | 2 | 3 | 4 | 5;
+}
+
+/** Arredonda a 9 casas antes do teto, como a CTE SQL (evita 17,0000000001 -> 18). */
+const round9 = (n: number) => Math.round(n * 1e9) / 1e9;
+
+/**
+ * K8, K9, K10 numa função pura (a CTE `triage` do SQL é a fonte de verdade para os filtros; os testes garantem que dão o mesmo):
+ * SS = ceil(σ · Z · √LT); PE = consumo · LT + SS; nível = 1 + (0 se stock ≥ PE; 2 se ≥ consumo·LT; senão 3) + 1 se classe A;
+ * abaixo do mínimo (e sem R11) sobe a pelo menos 4. Sem consumo: sem SS nem PE, nível 1 (ou 4 pela regra do mínimo).
+ */
+export function evaluateTriage(i: TriageInput): TriageOutcome {
+  const noUsage = i.usage === 0;
+  const ss = noUsage ? null : Math.ceil(round9((i.sigma ?? 0) * i.z * Math.sqrt(Math.max(i.lt, 0))));
+  const pe = ss === null ? null : i.usage * i.lt + ss;
+  let base = 1;
+  if (pe !== null) base = 1 + (i.stock >= pe ? 0 : i.stock >= i.usage * i.lt ? 2 : 3) + (i.class === 'A' ? 1 : 0);
+  const level = !i.minAboveMax && i.stock < i.minRequired ? Math.max(base, 4) : base;
+  return { ss, pe, level: level as TriageOutcome['level'] };
+}
+
+export interface Scenario {
+  /** Dias a somar ao tempo de reposição (só a artigos com tempo de reposição válido, > 0). */
+  leadTimeDeltaDays: number;
+  /** Só os artigos deste fornecedor (null = todos). */
+  vendorId: string | null;
+  /** Aumento do consumo, em % (σ escala na mesma proporção). */
+  usageDeltaPct: number;
+}
+
+/** Aplica o cenário a um artigo (consumo constante, sem previsão): folga (K6) e triagem resultantes. */
+export function simulateItem(i: TriageInput & { vendorId: string }, s: Scenario): { slack: number | null; outcome: TriageOutcome } {
+  const factor = 1 + s.usageDeltaPct / 100;
+  const affected = s.vendorId === null || s.vendorId === i.vendorId;
+  const lt = affected && i.lt > 0 ? i.lt + s.leadTimeDeltaDays : i.lt;
+  const usage = i.usage * factor;
+  const sim = { ...i, usage, sigma: i.sigma === null ? null : i.sigma * factor, lt };
+  const autonomy = usage > 0 ? i.stock / usage : null;
+  return { slack: autonomy === null || lt <= 0 ? null : autonomy - lt, outcome: evaluateTriage(sim) };
+}

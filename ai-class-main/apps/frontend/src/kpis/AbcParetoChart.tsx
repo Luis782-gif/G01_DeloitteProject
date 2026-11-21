@@ -13,7 +13,7 @@ export function AbcParetoChart({ rows }: { rows: ParetoRow[] }) {
     <div style={{ width: '100%', height: 320 }} role="img" aria-label="Pareto ABC: valor de stock por artigo e percentagem acumulada">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--line)" vertical={false} />
           <XAxis dataKey="itemRef" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} interval={0} angle={-45} textAnchor="end" height={90} />
           <YAxis yAxisId="valor" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickFormatter={eur} />
           <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} unit="%" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
